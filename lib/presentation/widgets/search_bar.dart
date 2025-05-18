@@ -1,3 +1,4 @@
+// lib/presentation/widgets/search_bar.dart
 import 'package:flutter/material.dart';
 import '../../core/theme/color_pallete.dart';
 
@@ -21,28 +22,21 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
   late Animation<double> _pulseAnimation;
   bool _isFocused = false;
   bool _showClearButton = false;
-  
+
   @override
   void initState() {
     super.initState();
-    
-    // Setup animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    
-    // Create pulse animation for search icon
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Curves.easeInOut,
       ),
     );
-    
     _animationController.repeat(reverse: true);
-    
-    // Add listener to show/hide clear button
     _controller.addListener(() {
       setState(() {
         _showClearButton = _controller.text.isNotEmpty;
@@ -61,36 +55,34 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      height: 48,
+      height: 50,
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(_isFocused ? 24 : 16),
+        color: AppColors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: _isFocused 
-                ? Colors.black.withOpacity(0.1)
-                : Colors.transparent,
-            blurRadius: 8,
+            color: Colors.black.withOpacity(_isFocused ? 0.15 : 0.05),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: _isFocused ? AppColors.primary.withOpacity(0.5) : Colors.grey.withOpacity(0.2),
-          width: 1.5,
+          color: _isFocused ? AppColors.primary.withOpacity(0.6) : AppColors.background,
+          width: 1,
         ),
       ),
       child: Row(
         children: [
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           ScaleTransition(
             scale: _isFocused ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
             child: Icon(
               Icons.search,
-              color: _isFocused ? AppColors.primary : Colors.grey,
-              size: 22,
+              color: _isFocused ? AppColors.primary : AppColors.textSecondary,
+              size: 24,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
             child: Focus(
               onFocusChange: (hasFocus) {
@@ -102,20 +94,18 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
                 controller: _controller,
                 decoration: InputDecoration(
                   hintText: widget.hintText,
-                  hintStyle: TextStyle(
-                    color: Colors.grey.shade400,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  hintStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: AppColors.textSecondary.withOpacity(0.6),
+                        fontWeight: FontWeight.w400,
+                      ),
                   border: InputBorder.none,
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                onSubmitted: widget.onSearch,
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                onChanged: widget.onSearch,
                 textAlignVertical: TextAlignVertical.center,
                 cursorColor: AppColors.primary,
                 cursorWidth: 1.5,
@@ -123,8 +113,6 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
               ),
             ),
           ),
-          
-          // Clear button
           if (_showClearButton)
             GestureDetector(
               onTap: () {
@@ -133,66 +121,55 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
                   widget.onSearch!('');
                 }
               },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 28,
-                height: 28,
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: AppColors.background,
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
-                  child: Icon(
-                    Icons.close,
-                    size: 16,
-                    color: Colors.grey,
-                  ),
+                child: const Icon(
+                  Icons.close,
+                  size: 18,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
-          
-          const SizedBox(width: 8),
-          
-          // Divider
           Container(
-            height: 24,
-            width: 1.5,
-            decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(1),
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 8),
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            width: 1,
+            color: AppColors.background,
           ),
-          
-          // Filter button
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 8),
             child: InkWell(
               onTap: () {
-                // Add filter functionality here
+                // Add filter functionality
               },
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(18),
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.tune,
-                      color: AppColors.primary,
+                      color: AppColors.white,
                       size: 18,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Filter',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                            color: AppColors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
                   ],
                 ),

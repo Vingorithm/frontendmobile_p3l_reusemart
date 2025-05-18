@@ -1,3 +1,4 @@
+// lib/presentation/widgets/persistent_navbar.dart
 import 'package:flutter/material.dart';
 import '../../core/theme/color_pallete.dart';
 
