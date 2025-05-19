@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/theme/color_pallete.dart';
 import 'presentation/pages/home_page.dart';
-import 'presentation/pages/claim_merch_page.dart';
+import 'presentation/pages/profile_page.dart'; // Changed from claim_merch_page
 import 'presentation/pages/merchandise_page.dart';
 import 'presentation/pages/transaksi_page.dart';
 import 'presentation/widgets/persistent_navbar.dart';
@@ -59,8 +59,8 @@ class _RootScreenState extends State<RootScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const MerchandiseScreen(),
-    const ClaimScreen(),
     const TransactionScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {

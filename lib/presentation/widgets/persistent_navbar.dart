@@ -165,8 +165,8 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> with Ti
                 children: [
                   _buildNavItem(0, Icons.shopping_bag_outlined, 'Produk'),
                   _buildNavItem(1, Icons.shopping_cart_outlined, 'Merchandise'),
-                  _buildNavItem(2, Icons.assignment_outlined, 'Claim Merch'),
-                  _buildNavItem(3, Icons.receipt_long_outlined, 'Transaksi'),
+                  _buildNavItem(2, Icons.receipt_long_outlined, 'Transaksi'),
+                  _buildNavItem(3, Icons.person_outline, 'Profile'),
                 ],
               ),
             ),
