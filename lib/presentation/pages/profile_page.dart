@@ -1,6 +1,7 @@
 // lib/presentation/pages/profile_page.dart
 import 'package:flutter/material.dart';
 import '../../core/theme/color_pallete.dart';
+import './login_page.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -71,10 +72,19 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Profile Menu Items
+            _buildMenuItem(
+              icon: Icons.account_circle,
+              title: 'Login',
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()));
+              },
+            ),
+
             _buildMenuItem(
               icon: Icons.edit_outlined,
               title: 'Edit Profile',
@@ -82,7 +92,7 @@ class ProfileScreen extends StatelessWidget {
                 // Navigate to edit profile
               },
             ),
-            
+
             _buildMenuItem(
               icon: Icons.notifications_outlined,
               title: 'Notifications',
@@ -90,7 +100,7 @@ class ProfileScreen extends StatelessWidget {
                 // Navigate to notifications settings
               },
             ),
-            
+
             _buildMenuItem(
               icon: Icons.security_outlined,
               title: 'Privacy & Security',
@@ -98,7 +108,7 @@ class ProfileScreen extends StatelessWidget {
                 // Navigate to privacy settings
               },
             ),
-            
+
             _buildMenuItem(
               icon: Icons.help_outline,
               title: 'Help & Support',
@@ -106,7 +116,7 @@ class ProfileScreen extends StatelessWidget {
                 // Navigate to help
               },
             ),
-            
+
             _buildMenuItem(
               icon: Icons.info_outline,
               title: 'About',
@@ -114,9 +124,9 @@ class ProfileScreen extends StatelessWidget {
                 // Navigate to about
               },
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Logout Button
             Container(
               width: double.infinity,
@@ -156,7 +166,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
           ],
         ),
