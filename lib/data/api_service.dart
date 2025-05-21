@@ -24,6 +24,82 @@ import '../data/models/transaksi.dart';
 class ApiService {
   static const String baseUrl = 'http://10.0.2.2:3000/api';
 
+  // auth
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/akun/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Contoh akses data:
+        String message = data['message'];
+        String token = data['token'];
+        Map<String, dynamic> akun = data['akun'];
+
+        print('Login berhasil: $message');
+        print('Token: $token');
+        print('Role: ${akun['role']}');
+
+        return data;
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Login gagal');
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan saat login: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> register(
+    String role,
+    String username,
+    String email,
+    String password,
+    {String? alamat}
+  ) async {
+    try {
+      final Map<String, dynamic> body = {
+        'role': role,
+        'username': username,
+        'email': email,
+        'password': password,
+      };
+
+      if (role == 'Organisasi Amal' && alamat != null && alamat.isNotEmpty) {
+        body['alamat'] = alamat;
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/akun/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+
+        print('Registrasi berhasil: ${data['message']}');
+        print('ID Akun: ${data['akun']['id_akun']}');
+        print('Role: ${data['akun']['role']}');
+
+        return data;
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Registrasi gagal');
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan saat registrasi: $e');
+    }
+  }
+
   // Akun
   Future<List<Akun>> getAllAkun() async {
     try {

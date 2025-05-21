@@ -3,7 +3,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../../core/theme/color_pallete.dart';
-import './register_page.dart'; // Pastikan Anda punya halaman ini
+import '../../core/theme/app_theme.dart';
+
+import '../../data/api_service.dart';
+import '../../utils/tokenUtils.dart';
+
+import './register_page.dart';
+import './home_page.dart';
+import '../../main.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +20,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final ApiService _apiService = ApiService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
@@ -22,30 +30,28 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
 
-    final url = Uri.parse('https://api.example.com/login'); // Ganti dengan endpoint API Anda
-
     try {
-      final response = await http.post(
-        url,
-        body: {
-          'email': _emailController.text,
-          'password': _passwordController.text,
-        },
-      );
-
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200 && data['token'] != null) {
-        // Login berhasil
+      if (_emailController.text.length == 0 ||
+          _passwordController.text.length == 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login berhasil')),
+          SnackBar(content: Text('Form login tidak boleh kosong!')),
         );
-
-        // Navigasi ke halaman utama atau simpan token
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Login gagal')),
-        );
+        final response = await _apiService.login(
+            _emailController.text, _passwordController.text);
+
+        if (response['token'] != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login berhasil')),
+          );
+          saveToken(response['token']);
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => RootScreen()));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response['message'] ?? 'Login gagal')),
+          );
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -70,26 +76,23 @@ class _LoginPageState extends State<LoginPage> {
             const Spacer(flex: 2),
 
             // Logo ReuseMart
-            RichText(
-              text: const TextSpan(
-                style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-                children: [
-                  TextSpan(
-                    text: 'Reuse',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  TextSpan(
-                    text: ' Mart',
-                    style: TextStyle(color: Colors.white, backgroundColor: Color(0xFF018749)),
-                  ),
-                ],
+            GestureDetector(
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RootScreen()),
+                );
+              },
+              child: Image.asset(
+                'assets/images/logo.png',
+                height: 90,
               ),
             ),
 
             const SizedBox(height: 32),
 
             const Text(
-              'LOGIN',
+              'Login',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
@@ -122,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 8),
 
             Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.center,
               child: TextButton(
                 onPressed: () {
                   // Implementasi lupa password
@@ -130,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: const Text(
                   'lupa password?',
                   style: TextStyle(
-                    color: Color(0xFF018749),
+                    color: AppColors.primary,
                     fontStyle: FontStyle.italic,
                     fontWeight: FontWeight.w500,
                   ),
@@ -147,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF018749),
+                  backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -157,6 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                     : const Text(
                         'Login',
                         style: TextStyle(
+                          color: AppColors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -183,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text(
                     'register',
                     style: TextStyle(
-                      color: Color(0xFF018749),
+                      color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

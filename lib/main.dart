@@ -7,6 +7,11 @@ import 'presentation/pages/profile_page.dart'; // Changed from claim_merch_page
 import 'presentation/pages/merchandise_page.dart';
 import 'presentation/pages/transaksi_page.dart';
 import 'presentation/widgets/persistent_navbar.dart';
+import 'presentation/pages/histori_komisi_page.dart';
+import 'presentation/pages/histori_pembelian_page.dart';
+import 'presentation/pages/histori_penitipan_page.dart';
+import 'presentation/pages/histori_tugas_page.dart';
+import 'utils/tokenUtils.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +60,66 @@ class RootScreen extends StatefulWidget {
 class _RootScreenState extends State<RootScreen> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
+  String role = "Guest";
+  bool isLoading = true;
+
+   @override
+  void initState() {
+    super.initState();
+    _getRoleFromToken();
+  }
+
+  Future<void> _getRoleFromToken() async {
+    final token = await getToken();
+
+    if (token != null) {
+      final decoded = decodeToken(token);
+      if (decoded != null && decoded.containsKey('role')) {
+        setState(() {
+          role = decoded['role'];
+        });
+      }
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  List<Widget> setScreens(String role) {
+    switch (role) {
+      case "Pembeli":
+        return [
+          const HomeScreen(),
+          const MerchandiseScreen(),
+          const TransactionScreen(),
+          const ProfileScreen(),
+        ];
+      case "Penitip":
+        return [
+          const HomeScreen(),
+          const HistoriPenitipanPage(),
+          const ProfileScreen(),
+        ];
+      case "Kurir":
+        return [
+          const HomeScreen(),
+          const HistoriTugasPage(),
+          const ProfileScreen(),
+        ];
+      case "Hunter":
+        return [
+          const HomeScreen(),
+          const HistoriKomisiPage(),
+          const ProfileScreen(),
+        ];
+      default:
+        return [
+          const HomeScreen(),
+          const ProfileScreen(),
+        ];
+    }
+  }
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -78,16 +143,23 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    
     return Scaffold(
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
-        children: _screens,
+        children: setScreens(role),
       ),
       bottomNavigationBar: PersistentBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemSelected: _onItemTapped,
-      ),
+          selectedIndex: _selectedIndex,
+          onItemSelected: _onItemTapped,
+          role: role),
     );
   }
 }

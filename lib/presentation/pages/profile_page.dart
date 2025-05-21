@@ -1,10 +1,50 @@
-// lib/presentation/pages/profile_page.dart
 import 'package:flutter/material.dart';
 import '../../core/theme/color_pallete.dart';
 import './login_page.dart';
+import '../../utils/tokenUtils.dart';
+import '../../main.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _email = 'Loading...';
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserEmail();
+  }
+
+  Future<void> _loadUserEmail() async {
+    String? token = await getToken();
+
+    if (token == null || token.isEmpty) {
+      setState(() {
+        _email = 'Not logged in';
+        _isLoggedIn = false;
+      });
+      return;
+    }
+
+    final decoded = decodeToken(token ?? "");
+    if (decoded != null) {
+      setState(() {
+        _email = decoded['email'] ?? 'Email not found';
+        _isLoggedIn = true;
+      });
+    } else {
+      setState(() {
+        _email = 'Not logged in';
+        _isLoggedIn = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +93,8 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'John Doe',
+                  Text(
+                    _email,
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -62,9 +102,9 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'john.doe@example.com',
-                    style: TextStyle(
+                  Text(
+                    _email,
+                    style: const TextStyle(
                       fontSize: 16,
                       color: AppColors.textSecondary,
                     ),
@@ -75,7 +115,7 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Profile Menu Items
+            if (!_isLoggedIn) 
             _buildMenuItem(
               icon: Icons.account_circle,
               title: 'Login',
@@ -84,50 +124,36 @@ class ProfileScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const LoginPage()));
               },
             ),
-
             _buildMenuItem(
               icon: Icons.edit_outlined,
               title: 'Edit Profile',
-              onTap: () {
-                // Navigate to edit profile
-              },
+              onTap: () {},
             ),
-
             _buildMenuItem(
               icon: Icons.notifications_outlined,
               title: 'Notifications',
-              onTap: () {
-                // Navigate to notifications settings
-              },
+              onTap: () {},
             ),
-
             _buildMenuItem(
               icon: Icons.security_outlined,
               title: 'Privacy & Security',
-              onTap: () {
-                // Navigate to privacy settings
-              },
+              onTap: () {},
             ),
-
             _buildMenuItem(
               icon: Icons.help_outline,
               title: 'Help & Support',
-              onTap: () {
-                // Navigate to help
-              },
+              onTap: () {},
             ),
-
             _buildMenuItem(
               icon: Icons.info_outline,
               title: 'About',
-              onTap: () {
-                // Navigate to about
-              },
+              onTap: () {},
             ),
 
             const SizedBox(height: 24),
 
             // Logout Button
+            if (_isLoggedIn)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -237,7 +263,7 @@ class ProfileScreen extends StatelessWidget {
           content: const Text(
             'Are you sure you want to logout?',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: AppColors.black,
             ),
           ),
           actions: [
@@ -253,14 +279,13 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                // Handle logout logic here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Logged out successfully'),
-                    backgroundColor: AppColors.primary,
-                  ),
+                await removeToken();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RootScreen()),
+                  (route) => false,
                 );
               },
               style: ElevatedButton.styleFrom(

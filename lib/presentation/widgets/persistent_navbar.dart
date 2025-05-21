@@ -1,15 +1,16 @@
-// lib/presentation/widgets/persistent_navbar.dart
 import 'package:flutter/material.dart';
 import '../../core/theme/color_pallete.dart';
 
 class PersistentBottomNavBar extends StatefulWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
+  final String role; // Tambahan role
 
   const PersistentBottomNavBar({
     super.key,
     required this.selectedIndex,
     required this.onItemSelected,
+    required this.role,
   });
 
   @override
@@ -17,31 +18,29 @@ class PersistentBottomNavBar extends StatefulWidget {
 }
 
 class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> with TickerProviderStateMixin {
-  // Controllers for animations
   late List<AnimationController> _animationControllers;
   late List<Animation<double>> _scaleAnimations;
   late List<Animation<double>> _bounceAnimations;
-  
-  // For indicator animation
+
   late AnimationController _indicatorAnimationController;
   late Animation<double> _indicatorAnimation;
-  
+
   int _previousIndex = 0;
-  
+
   @override
   void initState() {
     super.initState();
-    
-    // Initialize animation controllers for each nav item
+
+    final itemCount = _buildNavItemsByRole().length;
+
     _animationControllers = List.generate(
-      4,
+      itemCount,
       (index) => AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 200),
       ),
     );
-    
-    // Scale animations for each item
+
     _scaleAnimations = _animationControllers.map((controller) {
       return Tween<double>(begin: 1.0, end: 1.2).animate(
         CurvedAnimation(
@@ -51,8 +50,7 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> with Ti
         ),
       );
     }).toList();
-    
-    // Bounce animations for each item
+
     _bounceAnimations = _animationControllers.map((controller) {
       return Tween<double>(begin: 0, end: -8).animate(
         CurvedAnimation(
@@ -62,45 +60,37 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> with Ti
         ),
       );
     }).toList();
-    
-    // For indicator animation
+
     _indicatorAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    
+
     _indicatorAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _indicatorAnimationController,
         curve: Curves.easeInOut,
       ),
     );
-    
-    // Initialize with current selected index
+
     _previousIndex = widget.selectedIndex;
     _animationControllers[widget.selectedIndex].value = 1;
   }
-  
+
   @override
   void didUpdateWidget(PersistentBottomNavBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.selectedIndex != oldWidget.selectedIndex) {
-      // Reset previous animation
       _animationControllers[oldWidget.selectedIndex].reverse();
-      
-      // Start new animation
       _animationControllers[widget.selectedIndex].forward();
-      
-      // Update previous index for indicator animation
+
       _previousIndex = oldWidget.selectedIndex;
-      
-      // Restart indicator animation
       _indicatorAnimationController.reset();
       _indicatorAnimationController.forward();
     }
   }
-  
+
   @override
   void dispose() {
     for (var controller in _animationControllers) {
@@ -110,8 +100,45 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> with Ti
     super.dispose();
   }
 
+  List<Map<String, dynamic>> _buildNavItemsByRole() {
+    switch (widget.role) {
+      case 'Pembeli':
+        return [
+          {'icon': Icons.home_outlined, 'label': 'Home'},
+          {'icon': Icons.shopping_cart_outlined, 'label': 'Merchandise'},
+          {'icon': Icons.receipt_long_outlined, 'label': 'Transaksi'},
+          {'icon': Icons.person_outline, 'label': 'Profile'},
+        ];
+      case 'Penitip':
+        return [
+          {'icon': Icons.home_outlined, 'label': 'Home'},
+          {'icon': Icons.receipt_long_outlined, 'label': 'Transaksi'},
+          {'icon': Icons.person_outline, 'label': 'Profile'},
+        ];
+      case 'Kurir':
+        return [
+          {'icon': Icons.home_outlined, 'label': 'Home'},
+          {'icon': Icons.task_alt_outlined, 'label': 'Tugas'},
+          {'icon': Icons.person_outline, 'label': 'Profile'},
+        ];
+      case 'Hunter':
+        return [
+          {'icon': Icons.home_outlined, 'label': 'Home'},
+          {'icon': Icons.attach_money_outlined, 'label': 'Komisi'},
+          {'icon': Icons.person_outline, 'label': 'Profile'},
+        ];
+      default:
+        return [
+          {'icon': Icons.home_outlined, 'label': 'Home'},
+          {'icon': Icons.person_outline, 'label': 'Profile'},
+        ];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final items = _buildNavItemsByRole();
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.primary,
@@ -128,20 +155,18 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> with Ti
         top: false,
         child: Stack(
           children: [
-            // Animated indicator line
             AnimatedBuilder(
               animation: _indicatorAnimationController,
               builder: (context, child) {
-                // Calculate position for animated indicator
                 final double width = MediaQuery.of(context).size.width;
-                final itemWidth = width / 4;
-                
+                final itemWidth = width / items.length;
+
                 final double startPosition = _previousIndex * itemWidth + (itemWidth / 2 - 15);
                 final double endPosition = widget.selectedIndex * itemWidth + (itemWidth / 2 - 15);
-                
-                final double position = 
+
+                final double position =
                     startPosition + (endPosition - startPosition) * _indicatorAnimation.value;
-                    
+
                 return Positioned(
                   top: 0,
                   left: position,
@@ -156,18 +181,14 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> with Ti
                 );
               },
             ),
-            
-            // Nav Items
+
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItem(0, Icons.shopping_bag_outlined, 'Produk'),
-                  _buildNavItem(1, Icons.shopping_cart_outlined, 'Merchandise'),
-                  _buildNavItem(2, Icons.receipt_long_outlined, 'Transaksi'),
-                  _buildNavItem(3, Icons.person_outline, 'Profile'),
-                ],
+                children: List.generate(items.length, (index) {
+                  return _buildNavItem(index, items[index]['icon'], items[index]['label']);
+                }),
               ),
             ),
           ],
@@ -178,10 +199,10 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> with Ti
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = widget.selectedIndex == index;
-    
+
     return AnimatedBuilder(
       animation: Listenable.merge([
-        _scaleAnimations[index], 
+        _scaleAnimations[index],
         _bounceAnimations[index],
       ]),
       builder: (context, child) {
