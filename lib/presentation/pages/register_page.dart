@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:frontendmobile_p3l_reusemart/main.dart';
+import 'package:http/http.dart';
+
 import '../../core/theme/color_pallete.dart';
-import 'login_page.dart'; // Pastikan ada file ini
+import '../../core/theme/app_theme.dart';
+
+import '../../data/api_service.dart';
+
+import 'login_page.dart';
+import './home_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,29 +21,61 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
   String selectedRole = 'Pembeli';
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController alamatController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final ApiService _apiService = ApiService();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _alamatController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  bool _isLoading = false;
 
-  void register() {
-    if (_formKey.currentState!.validate()) {
-      final data = {
-        'role': selectedRole,
-        'username': usernameController.text,
-        'email': emailController.text,
-        'password': passwordController.text,
-        'alamat': selectedRole == 'Organisasi Amal' ? alamatController.text : null,
-      };
+  // Validasi format email
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
 
-      // TODO: Ganti dengan pemanggilan API-mu
-      print("Mendaftarkan dengan data: $data");
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      // Tampilkan snackbar / redirect
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Berhasil mendaftar!")),
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _apiService.register(
+        selectedRole,
+        _usernameController.text,
+        _emailController.text,
+        _passwordController.text,
+        alamat:
+            selectedRole == 'Organisasi Amal' ? _alamatController.text : null,
       );
+
+      if (response["akun"] != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registrasi berhasil!')),
+        );
+
+        // Navigasi ke halaman login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registrasi gagal!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kesalahan: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -51,28 +91,16 @@ class _RegisterPageState extends State<RegisterPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  // Logo
-                  RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Reuse ',
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'Mart',
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            backgroundColor: Colors.green,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RootScreen()),
+                      );
+                    },
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 90,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -105,7 +133,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   // Username
                   TextFormField(
-                    controller: usernameController,
+                    controller: _usernameController,
                     decoration: const InputDecoration(
                       labelText: "Username",
                       border: OutlineInputBorder(),
@@ -115,19 +143,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Alamat (hanya untuk organisasi)
+                  // Alamat
                   if (selectedRole == 'Organisasi Amal')
                     Column(
                       children: [
                         TextFormField(
-                          controller: alamatController,
+                          controller: _alamatController,
                           decoration: const InputDecoration(
                             labelText: "Alamat",
                             border: OutlineInputBorder(),
                           ),
-                          validator: (value) => selectedRole == 'Organisasi Amal' && value!.isEmpty
-                              ? 'Alamat wajib diisi'
-                              : null,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Alamat wajib diisi' : null,
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -135,19 +162,25 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   // Email
                   TextFormField(
-                    controller: emailController,
+                    controller: _emailController,
                     decoration: const InputDecoration(
                       labelText: "@email",
                       border: OutlineInputBorder(),
                     ),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Email wajib diisi' : null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Email wajib diisi';
+                      } else if (!_isValidEmail(value)) {
+                        return 'Format email tidak valid';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
 
                   // Password
                   TextFormField(
-                    controller: passwordController,
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: "Password",
@@ -160,34 +193,40 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   // Confirm Password
                   TextFormField(
-                    controller: confirmPasswordController,
+                    controller: _confirmPasswordController,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: "Konfirmasi Password",
                       border: OutlineInputBorder(),
                     ),
-                    validator: (value) => value != passwordController.text
+                    validator: (value) => value != _passwordController.text
                         ? 'Password tidak cocok'
                         : null,
                   ),
                   const SizedBox(height: 24),
 
-                  // Tombol Register
+                  // Tombol Register / Loading
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: register,
+                      onPressed: _isLoading ? null : _register,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          : const Text(
+                              'Register',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -199,15 +238,16 @@ class _RegisterPageState extends State<RegisterPage> {
                       const Text("Sudah punya akun? "),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginPage()),
+                            MaterialPageRoute(
+                                builder: (context) => const LoginPage()),
                           );
                         },
                         child: const Text(
                           "login",
                           style: TextStyle(
-                            color: Colors.green,
+                            color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
