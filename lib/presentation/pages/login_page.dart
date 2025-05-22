@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 
 import '../../data/api_service.dart';
 import '../../utils/tokenUtils.dart';
+import '../../presentation/widgets/toast_universal.dart';
 
 import './register_page.dart';
 import './home_page.dart';
@@ -33,30 +34,32 @@ class _LoginPageState extends State<LoginPage> {
     try {
       if (_emailController.text.length == 0 ||
           _passwordController.text.length == 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Form login tidak boleh kosong!')),
-        );
+        // Show warning toast for empty fields
+        ToastUtils.showWarning(context, 'Form login tidak boleh kosong!');
       } else {
         final response = await _apiService.login(
             _emailController.text, _passwordController.text);
 
         if (response['token'] != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login berhasil')),
-          );
+          // Show success toast
+          ToastUtils.showSuccess(context, 'Login berhasil!');
+          
           saveToken(response['token']);
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => RootScreen()));
+          
+          // Delay navigation to show toast
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (context) => RootScreen()));
+          });
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response['message'] ?? 'Login gagal')),
-          );
+          // Show error toast for login failure
+          ToastUtils.showError(
+              context, response['message'] ?? 'Login gagal, silakan coba lagi');
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan: $e')),
-      );
+      // Show error toast for exceptions
+      ToastUtils.showError(context, 'Terjadi kesalahan: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -128,7 +131,8 @@ class _LoginPageState extends State<LoginPage> {
               alignment: Alignment.center,
               child: TextButton(
                 onPressed: () {
-                  // Implementasi lupa password
+                  // Show info toast for forgot password
+                  ToastUtils.showInfo(context, 'Fitur lupa password akan segera hadir!');
                 },
                 child: const Text(
                   'lupa password?',
