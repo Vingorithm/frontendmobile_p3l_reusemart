@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontendmobile_p3l_reusemart/main.dart';
 import 'package:http/http.dart';
-
 import '../../core/theme/color_pallete.dart';
 import '../../core/theme/app_theme.dart';
-
 import '../../data/api_service.dart';
-
+import '../../data/services/auth_service.dart';
 import 'login_page.dart';
 import './home_page.dart';
 
@@ -21,7 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
   String selectedRole = 'Pembeli';
-  final ApiService _apiService = ApiService();
+  final AuthService _apiService = AuthService();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _alamatController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();

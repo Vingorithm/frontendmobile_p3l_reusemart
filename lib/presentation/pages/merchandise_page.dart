@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/models/merchandise.dart';
 import '../../data/api_service.dart';
+import '../../data/services/merchandise_service.dart';
 import '../../core/theme/color_pallete.dart';
 import '../widgets/merchandise_card.dart';
 import '../widgets/search_bar.dart';
@@ -13,7 +14,7 @@ class MerchandiseScreen extends StatefulWidget {
 }
 
 class _MerchandiseScreenState extends State<MerchandiseScreen> with TickerProviderStateMixin {
-  final ApiService _apiService = ApiService();
+  final MerchandiseService _apiService = MerchandiseService();
   late Future<List<Merchandise>> _futureMerchandise;
   String _searchQuery = '';
   late AnimationController _headerAnimationController;

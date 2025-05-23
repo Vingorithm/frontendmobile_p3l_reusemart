@@ -2,6 +2,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../data/api_service.dart';
+import '../../data/services/barang_service.dart';
 import '../../core/theme/color_pallete.dart';
 import '../../data/models/barang.dart';
 import '../../presentation/widgets/product_card.dart';
@@ -16,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  final ApiService _apiService = ApiService();
+  final BarangService _apiService = BarangService();
   late Future<List<Barang>> _futureBarang;
   String _searchQuery = '';
   late AnimationController _headerAnimationController;

@@ -1,12 +1,13 @@
+// lib/presentation/pages/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import '../../core/theme/color_pallete.dart';
 import '../../core/theme/app_theme.dart';
-
-import '../../data/api_service.dart';
+import '../../data/services/akun_service.dart';
+import '../../data/services/auth_service.dart';
 import '../../utils/tokenUtils.dart';
+import '../../utils/notification_service.dart';
 import '../../presentation/widgets/toast_universal.dart';
 
 import './register_page.dart';
@@ -21,7 +22,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final ApiService _apiService = ApiService();
+  final AuthService _apiService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
@@ -32,39 +33,84 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      if (_emailController.text.length == 0 ||
-          _passwordController.text.length == 0) {
-        // Show warning toast for empty fields
+      // Validasi input
+      if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
         ToastUtils.showWarning(context, 'Form login tidak boleh kosong!');
-      } else {
-        final response = await _apiService.login(
-            _emailController.text, _passwordController.text);
+        return;
+      }
 
-        if (response['token'] != null) {
-          // Show success toast
-          ToastUtils.showSuccess(context, 'Login berhasil!');
-          
-          saveToken(response['token']);
-          
-          // Delay navigation to show toast
-          Future.delayed(const Duration(milliseconds: 1500), () {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => RootScreen()));
-          });
+      // Validasi format email basic
+      if (!_emailController.text.contains('@')) {
+        ToastUtils.showWarning(context, 'Format email tidak valid!');
+        return;
+      }
+
+      // Panggil API login
+      final response = await _apiService.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (response['token'] != null && response['akun'] != null) {
+        // Simpan JWT token ke SharedPreferences
+        await saveToken(response['token']);
+        
+        // Kirim FCM token ke backend setelah login berhasil
+        String userId = response['akun']['id_akun'];
+        bool fcmSent = await NotificationService.sendFcmTokenToBackend(userId);
+        
+        if (fcmSent) {
+          print('FCM token sent successfully after login');
         } else {
-          // Show error toast for login failure
-          ToastUtils.showError(
-              context, response['message'] ?? 'Login gagal, silakan coba lagi');
+          print('Failed to send FCM token, but login still successful');
         }
+
+        // Show success toast
+        ToastUtils.showSuccess(context, 'Login berhasil!');
+        
+        // Navigate setelah delay
+        await Future.delayed(const Duration(milliseconds: 1500));
+        
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const RootScreen()),
+          );
+        }
+      } else {
+        ToastUtils.showError(
+          context, 
+          response['message'] ?? 'Login gagal, silakan coba lagi'
+        );
       }
     } catch (e) {
-      // Show error toast for exceptions
-      ToastUtils.showError(context, 'Terjadi kesalahan: $e');
+      String errorMessage = 'Terjadi kesalahan saat login';
+      
+      // Handle specific error messages
+      if (e.toString().contains('Email tidak ditemukan')) {
+        errorMessage = 'Email tidak terdaftar';
+      } else if (e.toString().contains('Password salah')) {
+        errorMessage = 'Password yang Anda masukkan salah';
+      } else if (e.toString().contains('Koneksi gagal')) {
+        errorMessage = 'Periksa koneksi internet Anda';
+      }
+      
+      ToastUtils.showError(context, errorMessage);
+      print('Login error: $e');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -108,9 +154,12 @@ class _LoginPageState extends State<LoginPage> {
             // Email Field
             TextField(
               controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 hintText: 'Email',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
               ),
             ),
             const SizedBox(height: 16),
@@ -119,9 +168,12 @@ class _LoginPageState extends State<LoginPage> {
             TextField(
               controller: _passwordController,
               obscureText: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _login(), // Login ketika enter ditekan
               decoration: const InputDecoration(
                 hintText: 'Password',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
               ),
             ),
 
@@ -131,7 +183,6 @@ class _LoginPageState extends State<LoginPage> {
               alignment: Alignment.center,
               child: TextButton(
                 onPressed: () {
-                  // Show info toast for forgot password
                   ToastUtils.showInfo(context, 'Fitur lupa password akan segera hadir!');
                 },
                 child: const Text(
@@ -155,12 +206,20 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: _isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
                     : const Text(
                         'Login',
                         style: TextStyle(

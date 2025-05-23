@@ -15,12 +15,24 @@ class Akun {
   final String password;
   final String role;
 
+  @JsonKey(name: 'fcm_token')
+  final String? fcmToken; // Nullable karena bisa kosong
+
+  @JsonKey(name: 'created_at')
+  final DateTime? createdAt;
+
+  @JsonKey(name: 'updated_at')
+  final DateTime? updatedAt;
+
   Akun({
     required this.idAkun,
     required this.profilePicture,
     required this.email,
     required this.password,
     required this.role,
+    this.fcmToken,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Akun.fromJson(Map<String, dynamic> json) => _$AkunFromJson(json);
