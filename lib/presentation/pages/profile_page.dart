@@ -4,6 +4,7 @@ import './login_page.dart';
 import '../../utils/tokenUtils.dart';
 import '../../main.dart';
 import '../../presentation/widgets/confirm_modal.dart'; // Import komponen modal
+import 'about_page.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -316,38 +317,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Support Section
             _buildSectionTitle('Support'),
             const SizedBox(height: 12),
-            
-            _buildMenuItem(
-              icon: Icons.help_outline,
-              title: 'Help & Support',
-              subtitle: 'Get help and contact support',
-              onTap: () {},
-            ),
-            
+
             _buildMenuItem(
               icon: Icons.info_outline,
-              title: 'About',
+              title: 'About ReuseMart',
               subtitle: 'App version and information',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutScreen()),
+                );
+              },
             ),
 
             const SizedBox(height: 24),
-
-            // Danger Zone Section
-            if (_isLoggedIn) ...[
-              _buildSectionTitle('Danger Zone'),
-              const SizedBox(height: 12),
-              
-              _buildMenuItem(
-                icon: Icons.delete_forever_outlined,
-                title: 'Delete Account',
-                subtitle: 'Permanently delete your account',
-                onTap: _handleDeleteAccount, // Menggunakan delete confirmation
-                iconColor: Colors.red,
-              ),
-
-              const SizedBox(height: 32),
-            ],
 
             // Logout Button
             if (_isLoggedIn) ...[

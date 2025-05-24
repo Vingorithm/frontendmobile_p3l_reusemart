@@ -34,6 +34,7 @@ void main() async{
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
