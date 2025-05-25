@@ -156,9 +156,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       padding: const EdgeInsets.only(bottom: 24),
                       child: Column(
                         children: [
-                          // Stats Overview
-                          _buildStatsOverview(barangList),
-                          
                           // Categories Section
                           _buildCategorySection(context, categories),
                           
@@ -435,40 +432,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Kategori Produk',
-                    style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                      color: AppColors.textPrimary,
-                      fontSize: 20,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.primary, AppColors.secondary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.dashboard_customize_rounded,
+                          color: AppColors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Kategori Produk',
+                        style: Theme.of(context).textTheme.displaySmall!.copyWith(
+                          color: AppColors.textPrimary,
+                          fontSize: 22,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
-                    'Temukan yang Anda cari',
+                    'Jelajahi koleksi unggulan kami',
                     style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                       color: AppColors.textSecondary,
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
-              TextButton(
-                onPressed: () => debugPrint('View all categories'),
-                child: Text(
-                  'Lihat Semua',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
+        // Menggunakan tinggi yang lebih besar untuk card yang lebih lebar
         SizedBox(
-          height: 180,
+          height: 220, // Disesuaikan dengan tinggi CategoryCard yang baru (200 + margin)
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(), // Menambahkan bounce effect
             itemCount: categories.length,
             itemBuilder: (context, index) {
               final category = categories[index];
@@ -479,6 +490,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   imageUrl: category['image'],
                   discount: category['discount'],
                   onTap: () {
+                    // Animasi feedback saat kategori dipilih
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Membuka kategori: ${category['name']}'),
+                        backgroundColor: AppColors.primary,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
                     debugPrint('Category tapped: ${category['name']}');
                   },
                 ),
@@ -486,6 +509,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             },
           ),
         ),
+        // Menambahkan indicator dots untuk carousel effect
+        if (categories.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                categories.length > 5 ? 5 : categories.length, // Maksimal 5 dots
+                (index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: index == 0 
+                      ? AppColors.primary 
+                      : AppColors.primary.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }

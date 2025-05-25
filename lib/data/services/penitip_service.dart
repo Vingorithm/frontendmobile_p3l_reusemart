@@ -35,4 +35,20 @@ class PenitipService extends BaseApiService {
       rethrow;
     }
   }
+
+    Future<Penitip> getPenitipByIdAkun(String id) async {
+    try {
+      final response = await http.get(Uri.parse('${BaseApiService.baseUrl}/penitip/byIdAkun/$id'), headers: headers);
+      if (response.statusCode == 200) {
+        return Penitip.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 404) {
+        throw Exception('Penitip not found');
+      } else {
+        throw Exception('Failed to load penitip: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching penitip by id: $e');
+      rethrow;
+    }
+  }
 }
