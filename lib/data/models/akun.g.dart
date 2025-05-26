@@ -12,6 +12,13 @@ Akun _$AkunFromJson(Map<String, dynamic> json) => Akun(
       email: json['email'] as String,
       password: json['password'] as String,
       role: json['role'] as String,
+      fcmToken: json['fcm_token'] as String?,
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null
+          ? null
+          : DateTime.parse(json['updated_at'] as String),
     );
 
 Map<String, dynamic> _$AkunToJson(Akun instance) => <String, dynamic>{
@@ -20,4 +27,7 @@ Map<String, dynamic> _$AkunToJson(Akun instance) => <String, dynamic>{
       'email': instance.email,
       'password': instance.password,
       'role': instance.role,
+      'fcm_token': instance.fcmToken,
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
     };

@@ -36,18 +36,30 @@ class PenitipService extends BaseApiService {
     }
   }
 
-    Future<Penitip> getPenitipByIdAkun(String id) async {
+  Future<Penitip> getPenitipByIdAkun(String id) async {
     try {
-      final response = await http.get(Uri.parse('${BaseApiService.baseUrl}/penitip/byIdAkun/$id'), headers: headers);
+      final response = await http.get(
+        Uri.parse('${BaseApiService.baseUrl}/penitip/byIdAkun/$id'),
+        headers: headers,
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        return Penitip.fromJson(jsonDecode(response.body));
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return Penitip.fromJson(responseData['penitip']);
       } else if (response.statusCode == 404) {
-        throw Exception('Penitip not found');
+        throw Exception('Penitip tidak ditemukan');
+      } else if (response.statusCode == 401) {
+        throw Exception('Tidak diizinkan: Token tidak valid');
+      } else if (response.statusCode == 403) {
+        throw Exception('Akses ditolak');
       } else {
-        throw Exception('Failed to load penitip: ${response.statusCode}');
+        throw Exception('Gagal memuat data penitip: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching penitip by id: $e');
+      print('Error fetching penitip by id akun: $e');
       rethrow;
     }
   }

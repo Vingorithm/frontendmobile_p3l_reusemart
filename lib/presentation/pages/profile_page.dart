@@ -67,13 +67,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  String? _errorMessage;
+
   Future<void> _loadPenitipData() async {
     setState(() {
       _isLoadingPenitipData = true;
+      _errorMessage = null;
     });
 
     try {
-      // Ambil data penitip berdasarkan ID akun
       final penitipRepository = PenitipService();
       final penitipData = await penitipRepository.getPenitipByIdAkun(_userId);
       
@@ -84,6 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       setState(() {
         _isLoadingPenitipData = false;
+        _errorMessage = 'Gagal memuat data penitip: ${e.toString()}';
       });
       print('Error loading penitip data: $e');
     }
@@ -103,6 +106,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return 'Hunter';
       case 'owner':
         return 'Owner';
+      case 'customer service':
+        return 'Customer Service';
       default:
         return 'User';
     }
@@ -364,7 +369,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
 
             // Penitip Statistics Card (hanya untuk role penitip)
-            if (_userRole.toLowerCase() == 'penitip' && _penitipData != null) ...[
+            if (_userRole.toLowerCase() == 'penitip') ...[
               _buildPenitipStatsCard(),
               const SizedBox(height: 24),
             ],
@@ -583,7 +588,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'Penitip Statistics',
+                  'Statistik Penitip',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -645,8 +650,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: _penitipData?.badge == true ? Icons.verified : Icons.verified_outlined,
                         iconColor: _penitipData?.badge == true ? Colors.amber : Colors.grey,
                         title: 'Badge Status',
-                        value: _penitipData?.badge == true ? 'Verified' : 'Regular',
-                        subtitle: _penitipData?.badge == true ? 'penitip terverifikasi' : 'belum terverifikasi',
+                        value: _penitipData?.badge == true ? 'Ada' : 'Tidak Ada',
+                        subtitle: _penitipData?.badge == true ? 'penitip memiliki badge' : 'penitip tidak memiliki badge',
                       ),
                     ),
                   ],

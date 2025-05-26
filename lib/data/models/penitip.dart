@@ -21,6 +21,7 @@ class Penitip {
   @JsonKey(name: 'nomor_ktp')
   final String nomorKtp;
 
+  @JsonKey(fromJson: _stringToDouble)
   final double? keuntungan;
 
   @JsonKey(fromJson: _stringToDouble)
@@ -42,11 +43,11 @@ class Penitip {
     required this.namaPenitip,
     required this.fotoKtp,
     required this.nomorKtp,
-    this.keuntungan, // Updated
+    this.keuntungan,
     required this.rating,
     required this.badge,
-    this.totalPoin, // Updated
-    this.tanggalRegistrasi, // Updated
+    this.totalPoin,
+    this.tanggalRegistrasi,
     this.akun,
   });
 
@@ -57,6 +58,8 @@ class Penitip {
     if (value is String) {
       return double.parse(value);
     } else if (value is num) {
+      return value.toDouble();
+    } else if (value is int) {
       return value.toDouble();
     }
     throw FormatException('Cannot convert $value to double');
