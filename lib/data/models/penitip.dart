@@ -27,6 +27,7 @@ class Penitip {
   @JsonKey(fromJson: _stringToDouble)
   final double rating;
 
+  @JsonKey(fromJson: _stringToBool)
   final bool badge;
 
   @JsonKey(name: 'total_poin')
@@ -55,13 +56,55 @@ class Penitip {
   Map<String, dynamic> toJson() => _$PenitipToJson(this);
 
   static double _stringToDouble(dynamic value) {
+    if (value == null) {
+      print('Warning: Rating is null, returning 0.0');
+      return 0.0;
+    }
     if (value is String) {
-      return double.parse(value);
-    } else if (value is num) {
-      return value.toDouble();
-    } else if (value is int) {
+      if (value.isEmpty || value.toLowerCase() == 'null') {
+        print('Warning: Rating is empty/null string, returning 0.0');
+        return 0.0;
+      }
+      try {
+        return double.parse(value);
+      } catch (e) {
+        print('Error parsing rating string "$value" to double: $e');
+        return 0.0;
+      }
+    }
+    if (value is num) {
       return value.toDouble();
     }
-    throw FormatException('Cannot convert $value to double');
+    if (value is bool) {
+      return value ? 1.0 : 0.0;
+    }
+    print('Warning: Cannot convert rating $value (${value.runtimeType}) to double, returning 0.0');
+    return 0.0;
+  }
+
+  static bool _stringToBool(dynamic value) {
+    if (value == null) {
+      print('Warning: Badge is null, returning false');
+      return false;
+    }
+
+    if (value is bool) {
+      return value;
+    }
+ 
+    if (value is String) {
+      final lowerValue = value.toLowerCase();
+      if (lowerValue == 'true' || lowerValue == '1') return true;
+      if (lowerValue == 'false' || lowerValue == '0' || lowerValue == 'null' || lowerValue.isEmpty) return false;
+      print('Warning: Unknown badge string value "$value", returning false');
+      return false;
+    }
+    
+    if (value is num) {
+      return value != 0;
+    }
+    
+    print('Warning: Cannot convert badge $value (${value.runtimeType}) to bool, returning false');
+    return false;
   }
 }

@@ -16,10 +16,8 @@ Barang _$BarangFromJson(Map<String, dynamic> json) => Barang(
       gambar: json['gambar'] as String,
       harga: Barang._stringToDouble(json['harga']),
       garansiBerlaku: json['garansi_berlaku'] as bool,
-      tanggalGaransi: json['tanggal_garansi'] == null
-          ? null
-          : DateTime.parse(json['tanggal_garansi'] as String),
-      berat: (json['berat'] as num).toDouble(),
+      tanggalGaransi: Barang._stringToDateTime(json['tanggal_garansi']),
+      berat: Barang._stringToDouble(json['berat']),
       statusQc: json['status_qc'] as String,
       kategoriBarang: json['kategori_barang'] as String,
       penitip: json['Penitip'] == null

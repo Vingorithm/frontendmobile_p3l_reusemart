@@ -14,7 +14,7 @@ Penitip _$PenitipFromJson(Map<String, dynamic> json) => Penitip(
       nomorKtp: json['nomor_ktp'] as String,
       keuntungan: Penitip._stringToDouble(json['keuntungan']),
       rating: Penitip._stringToDouble(json['rating']),
-      badge: json['badge'] as bool,
+      badge: Penitip._stringToBool(json['badge']),
       totalPoin: (json['total_poin'] as num?)?.toInt(),
       tanggalRegistrasi: json['tanggal_registrasi'] == null
           ? null

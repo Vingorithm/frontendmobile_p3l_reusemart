@@ -8,55 +8,62 @@ class BarangService extends BaseApiService {
   Future<List<Barang>> getAllBarang() async {
     try {
       final response = await http.get(
-        Uri.parse('${BaseApiService.baseUrl}/barang/mobile'), 
-        headers: headers
+        Uri.parse('${BaseApiService.baseUrl}/barang/mobile'),
+        headers: headers,
       );
       
       print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      print('Response headers: ${response.headers}');
       
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List data = jsonDecode(response.body);
         print('Total data received: ${data.length}');
         
         List<Barang> barangList = [];
+        int errorCount = 0;
         
         for (int i = 0; i < data.length; i++) {
           try {
-            print('Processing item $i: ${data[i]}');
-            final barang = Barang.fromJson(data[i]);
+            final itemData = data[i];       
+            final barang = Barang.fromJson(itemData);
             barangList.add(barang);
-            print('Successfully parsed item $i: ${barang.nama}');
-          } catch (e) {
-            print('Error parsing item $i: $e');
-            print('Item data: ${data[i]}');
-            // Skip item yang error dan lanjutkan dengan item berikutnya
+          } catch (e, stackTrace) {
+            errorCount++;
+            final itemData = data[i];
+            ['harga', 'berat', 'garansi_berlaku', 'tanggal_garansi'].forEach((field) {
+              final value = itemData[field];
+              print('  - $field: $value (${value.runtimeType})');
+            });
+            
             continue;
           }
         }
         
-        print('Successfully parsed ${barangList.length} out of ${data.length} items');
-        return barangList;
+        print('✅ Successfully parsed ${barangList.length} out of ${data.length} items');
+        if (errorCount > 0) {
+          print('❌ Failed to parse $errorCount items');
+        }
         
+        return barangList;
       } else {
         print('Failed to load barang: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to load barang: ${response.statusCode}');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error fetching barang: $e');
+      print('Stack trace: $stackTrace');
       rethrow;
     }
   }
-
+  
   Future<Barang> getBarangById(String id) async {
     try {
       final response = await http.get(
-        Uri.parse('${BaseApiService.baseUrl}/barang/mobile/$id'), 
+        Uri.parse('${BaseApiService.baseUrl}/barang/mobile/$id'),
         headers: headers
       );
-      
+            
       print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
       
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -66,8 +73,9 @@ class BarangService extends BaseApiService {
       } else {
         throw Exception('Failed to load barang: ${response.statusCode}');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error fetching barang by id: $e');
+      print('Stack trace: $stackTrace');
       rethrow;
     }
   }
