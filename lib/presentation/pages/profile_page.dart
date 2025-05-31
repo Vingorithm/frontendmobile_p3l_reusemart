@@ -5,7 +5,9 @@ import '../../utils/tokenUtils.dart';
 import '../../main.dart';
 import '../../presentation/widgets/confirm_modal.dart';
 import '../../data/models/penitip.dart';
+import '../../data/models/pembeli.dart';
 import '../../data/services/penitip_service.dart';
+import '../../data/services/pembeli_service.dart';
 import 'about_page.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -24,6 +26,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Data khusus untuk penitip
   Penitip? _penitipData;
   bool _isLoadingPenitipData = false;
+  
+  // Data khusus untuk pembeli
+  Pembeli? _pembeliData;
+  bool _isLoadingPembeliData = false;
 
   @override
   void initState() {
@@ -56,6 +62,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // Jika role adalah penitip, load data penitip
       if (_userRole.toLowerCase() == 'penitip') {
         await _loadPenitipData();
+      }
+      // Jika role adalah pembeli, load data pembeli
+      else if (_userRole.toLowerCase() == 'pembeli') {
+        await _loadPembeliData();
       }
     } else {
       setState(() {
@@ -92,12 +102,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _loadPembeliData() async {
+    setState(() {
+      _isLoadingPembeliData = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Cari pembeli berdasarkan id_akun
+      final pembeliService = PembeliService();
+      final allPembeli = await pembeliService.getAllPembeli();
+      
+      // Cari pembeli yang id_akun nya sesuai dengan userId
+      final pembeliData = allPembeli.firstWhere(
+        (pembeli) => pembeli.idAkun == _userId,
+        orElse: () => throw Exception('Data pembeli tidak ditemukan'),
+      );
+      
+      setState(() {
+        _pembeliData = pembeliData;
+        _isLoadingPembeliData = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingPembeliData = false;
+        _errorMessage = 'Gagal memuat data pembeli: ${e.toString()}';
+      });
+      print('Error loading pembeli data: $e');
+    }
+  }
+
   String _getRoleDisplayName(String role) {
     switch (role.toLowerCase()) {
       case 'admin':
         return 'Admin';
       case 'penitip':
         return 'Penitip';
+      case 'pembeli':
+        return 'Pembeli';
       case 'kurir':
         return 'Kurir';
       case 'pegawai gudang':
@@ -119,6 +161,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return Colors.red;
       case 'penitip':
         return AppColors.secondary;
+      case 'pembeli':
+        return Colors.blue;
       case 'seller':
         return AppColors.secondary;
       case 'user':
@@ -268,7 +312,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _isLoggedIn && _email.isNotEmpty && _email != 'Loading...'
                               ? (_penitipData?.namaPenitip.isNotEmpty == true 
                                   ? _penitipData!.namaPenitip[0].toUpperCase()
-                                  : _email[0].toUpperCase())
+                                  : _pembeliData?.nama.isNotEmpty == true
+                                    ? _pembeliData!.nama[0].toUpperCase()
+                                    : _email[0].toUpperCase())
                               : '?',
                           style: TextStyle(
                             fontSize: 36,
@@ -282,7 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     
                     // Name or Email
                     Text(
-                      _penitipData?.namaPenitip ?? _email,
+                      _penitipData?.namaPenitip ?? _pembeliData?.nama ?? _email,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -291,8 +337,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       textAlign: TextAlign.center,
                     ),
                     
-                    // Email (jika ada nama penitip)
-                    if (_penitipData?.namaPenitip != null) ...[
+                    // Email (jika ada nama penitip atau pembeli)
+                    if (_penitipData?.namaPenitip != null || _pembeliData?.nama != null) ...[
                       const SizedBox(height: 4),
                       Text(
                         _email,
@@ -371,6 +417,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Penitip Statistics Card (hanya untuk role penitip)
             if (_userRole.toLowerCase() == 'penitip') ...[
               _buildPenitipStatsCard(),
+              const SizedBox(height: 24),
+            ],
+
+            // Pembeli Statistics Card (hanya untuk role pembeli)
+            if (_userRole.toLowerCase() == 'pembeli') ...[
+              _buildPembeliStatsCard(),
               const SizedBox(height: 24),
             ],
 
@@ -686,6 +738,238 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPembeliStatsCard() {
+    if (_isLoadingPembeliData) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadPembeliData,
+              child: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Statistik Pembeli',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Stats Grid
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Main Row - Points and Member ID
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatItem(
+                        icon: Icons.stars,
+                        iconColor: Colors.amber,
+                        title: 'Total Poin',
+                        value: '${_pembeliData?.totalPoin ?? 0}',
+                        subtitle: 'poin terkumpul',
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildStatItem(
+                        icon: Icons.card_membership,
+                        iconColor: Colors.blue,
+                        title: 'Member ID',
+                        value: _pembeliData?.idPembeli ?? '-',
+                        subtitle: 'identitas member',
+                      ),
+                    ),
+                  ],
+                ),
+                
+                // Registration Date
+                if (_pembeliData?.tanggalRegistrasi != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Bergabung sejak ${_formatRegistrationDate(_pembeliData!.tanggalRegistrasi)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                
+                // Additional Info Card
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.blue.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: Colors.blue,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Status Member',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue.shade800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Member aktif ReuseMart dengan poin yang dapat ditukarkan untuk berbagai penawaran menarik',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

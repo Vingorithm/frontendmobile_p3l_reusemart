@@ -1,3 +1,4 @@
+// lib/data/services/pembeli_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/pembeli.dart';
@@ -7,8 +8,12 @@ class PembeliService extends BaseApiService {
   Future<List<Pembeli>> getAllPembeli() async {
     try {
       final response = await http.get(Uri.parse('${BaseApiService.baseUrl}/pembeli'), headers: headers);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}'); // For debugging
+      
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final List<dynamic> data = responseData['pembeli'] ?? []; // Extract 'pembeli' key
         return data.map((json) => Pembeli.fromJson(json)).toList();
       } else {
         print('Failed to load pembeli: ${response.statusCode} - ${response.body}');
@@ -23,6 +28,9 @@ class PembeliService extends BaseApiService {
   Future<Pembeli> getPembeliById(String id) async {
     try {
       final response = await http.get(Uri.parse('${BaseApiService.baseUrl}/pembeli/$id'), headers: headers);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}'); // For debugging
+      
       if (response.statusCode == 200) {
         return Pembeli.fromJson(jsonDecode(response.body));
       } else if (response.statusCode == 404) {
@@ -32,6 +40,28 @@ class PembeliService extends BaseApiService {
       }
     } catch (e) {
       print('Error fetching pembeli by id: $e');
+      rethrow;
+    }
+  }
+
+  Future<Pembeli> getPembeliByIdAkun(String idAkun) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${BaseApiService.baseUrl}/pembeli/byIdAkun/$idAkun'),
+        headers: headers,
+      );
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}'); 
+      
+      if (response.statusCode == 200) {
+        return Pembeli.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 404) {
+        throw Exception('Pembeli not found for this account');
+      } else {
+        throw Exception('Failed to load pembeli: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching pembeli by id_akun: $e');
       rethrow;
     }
   }
