@@ -54,7 +54,13 @@ class PembeliService extends BaseApiService {
       print('Response body: ${response.body}'); 
       
       if (response.statusCode == 200) {
-        return Pembeli.fromJson(jsonDecode(response.body));
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData.containsKey('pembeli')) {
+          final Map<String, dynamic> pembeliData = responseData['pembeli'];
+          return Pembeli.fromJson(pembeliData);
+        } else {
+          return Pembeli.fromJson(responseData);
+        }
       } else if (response.statusCode == 404) {
         throw Exception('Pembeli not found for this account');
       } else {

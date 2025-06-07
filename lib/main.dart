@@ -1,11 +1,11 @@
-// lib/main.dart
+// lib/main.dart (Updated)
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontendmobile_p3l_reusemart/utils/notification_service.dart';
 import 'core/theme/color_pallete.dart';
 import 'presentation/pages/home_page.dart';
-import 'presentation/pages/profile_page.dart'; // Changed from claim_merch_page
+import 'presentation/pages/profile_page.dart';
 import 'presentation/pages/merchandise_page.dart';
 import 'presentation/pages/transaksi_page.dart';
 import 'presentation/widgets/persistent_navbar.dart';
@@ -13,6 +13,7 @@ import 'presentation/pages/histori_komisi_page.dart';
 import 'presentation/pages/histori_pembelian_page.dart';
 import 'presentation/pages/histori_penitipan_page.dart';
 import 'presentation/pages/histori_tugas_page.dart';
+import 'presentation/pages/splash_screen.dart'; // Import splash screen
 import 'utils/tokenUtils.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -40,7 +41,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Barang App',
+      title: 'ReuseMart',
       theme: ThemeData(
         primaryColor: AppColors.primary,
         colorScheme: ColorScheme.fromSeed(
@@ -57,7 +58,8 @@ class MainApp extends StatelessWidget {
           systemOverlayStyle: SystemUiOverlayStyle.dark,
         ),
       ),
-      home: const RootScreen(),
+      // Ubah home menjadi SplashScreen
+      home: const SplashScreen(),
     );
   }
 }
@@ -104,7 +106,7 @@ class _RootScreenState extends State<RootScreen> {
         return [
           const HomeScreen(),
           const MerchandiseScreen(),
-          const TransactionScreen(),
+          const HistoriPembelianPage(),
           const ProfileScreen(),
         ];
       case "Penitip":

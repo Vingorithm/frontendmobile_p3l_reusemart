@@ -13,13 +13,13 @@ Barang _$BarangFromJson(Map<String, dynamic> json) => Barang(
       idPegawaiGudang: json['id_pegawai_gudang'] as String,
       nama: json['nama'] as String,
       deskripsi: json['deskripsi'] as String,
-      gambar: json['gambar'] as String,
+      gambar: Barang._stringOrEmpty(json['gambar']),
       harga: Barang._stringToDouble(json['harga']),
-      garansiBerlaku: json['garansi_berlaku'] as bool,
+      garansiBerlaku: Barang._boolFromDynamic(json['garansi_berlaku']),
       tanggalGaransi: Barang._stringToDateTime(json['tanggal_garansi']),
       berat: Barang._stringToDouble(json['berat']),
-      statusQc: json['status_qc'] as String,
-      kategoriBarang: json['kategori_barang'] as String,
+      statusQc: Barang._stringOrEmpty(json['status_qc']),
+      kategoriBarang: Barang._stringOrEmpty(json['kategori_barang']),
       penitip: json['Penitip'] == null
           ? null
           : Penitip.fromJson(json['Penitip'] as Map<String, dynamic>),

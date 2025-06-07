@@ -21,24 +21,27 @@ class Barang {
   
   final String nama;
   final String deskripsi;
+  
+  // Make gambar nullable and handle empty strings
+  @JsonKey(fromJson: _stringOrEmpty)
   final String gambar;
   
   @JsonKey(fromJson: _stringToDouble)
   final double harga;
   
-  @JsonKey(name: 'garansi_berlaku')
+  @JsonKey(name: 'garansi_berlaku', fromJson: _boolFromDynamic)
   final bool garansiBerlaku;
   
   @JsonKey(name: 'tanggal_garansi', fromJson: _stringToDateTime)
   final DateTime? tanggalGaransi;
-
+  
   @JsonKey(fromJson: _stringToDouble)
   final double berat;
   
-  @JsonKey(name: 'status_qc')
+  @JsonKey(name: 'status_qc', fromJson: _stringOrEmpty)
   final String statusQc;
   
-  @JsonKey(name: 'kategori_barang')
+  @JsonKey(name: 'kategori_barang', fromJson: _stringOrEmpty)
   final String kategoriBarang;
   
   @JsonKey(name: 'Penitip')
@@ -71,20 +74,52 @@ class Barang {
   
   factory Barang.fromJson(Map<String, dynamic> json) {
     try {
-      print('Parsing Barang JSON: $json');
-      return _$BarangFromJson(json);
-    } catch (e) {
+      print('Parsing Barang JSON for: ${json['nama'] ?? 'Unknown'}');
+      
+      // Pre-process the JSON to handle problematic fields
+      final processedJson = Map<String, dynamic>.from(json);
+      
+      // Handle nullable string fields
+      ['id_hunter', 'tanggal_garansi'].forEach((field) {
+        if (processedJson[field] == null || 
+            processedJson[field] == 'null' || 
+            processedJson[field] == '') {
+          processedJson[field] = null;
+        }
+      });
+      
+      // Handle string fields that should never be null
+      ['nama', 'deskripsi', 'gambar', 'status_qc', 'kategori_barang'].forEach((field) {
+        if (processedJson[field] == null || processedJson[field] == 'null') {
+          processedJson[field] = '';
+        }
+      });
+      
+      return _$BarangFromJson(processedJson);
+    } catch (e, stackTrace) {
       print('Error in Barang.fromJson: $e');
       print('JSON data: $json');
+      print('Stack trace: $stackTrace');
       rethrow;
     }
   }
-    
+  
   Map<String, dynamic> toJson() => _$BarangToJson(this);
   
-  List<String> get imageUrls => gambar.isNotEmpty 
-    ? gambar.split(',').map((url) => url.trim()).toList() 
-    : [];
+  List<String> get imageUrls {
+    if (gambar.isEmpty) return [];
+    return gambar.split(',').map((url) => url.trim()).where((url) => url.isNotEmpty).toList();
+  }
+  
+  // Helper methods for JSON conversion
+  static String _stringOrEmpty(dynamic value) {
+    if (value == null) return '';
+    if (value is String) {
+      if (value.toLowerCase() == 'null') return '';
+      return value;
+    }
+    return value.toString();
+  }
   
   static double _stringToDouble(dynamic value) {
     // Handle null values
@@ -119,6 +154,18 @@ class Barang {
     
     print('Warning: Cannot convert $value (${value.runtimeType}) to double, returning 0.0');
     return 0.0;
+  }
+  
+  static bool _boolFromDynamic(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is String) {
+      return value.toLowerCase() == 'true' || value == '1';
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    return false;
   }
   
   static DateTime? _stringToDateTime(dynamic value) {

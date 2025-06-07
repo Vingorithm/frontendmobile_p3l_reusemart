@@ -9,8 +9,10 @@ part of 'pengiriman.dart';
 Pengiriman _$PengirimanFromJson(Map<String, dynamic> json) => Pengiriman(
       idPengiriman: json['id_pengiriman'] as String,
       idPembelian: json['id_pembelian'] as String,
-      idPengkonfirmasi: json['id_pengkonfirmasi'] as String,
-      tanggalMulai: DateTime.parse(json['tanggal_mulai'] as String),
+      idPengkonfirmasi: json['id_pengkonfirmasi'] as String?,
+      tanggalMulai: json['tanggal_mulai'] == null
+          ? null
+          : DateTime.parse(json['tanggal_mulai'] as String),
       tanggalBerakhir: json['tanggal_berakhir'] == null
           ? null
           : DateTime.parse(json['tanggal_berakhir'] as String),
@@ -23,7 +25,7 @@ Map<String, dynamic> _$PengirimanToJson(Pengiriman instance) =>
       'id_pengiriman': instance.idPengiriman,
       'id_pembelian': instance.idPembelian,
       'id_pengkonfirmasi': instance.idPengkonfirmasi,
-      'tanggal_mulai': instance.tanggalMulai.toIso8601String(),
+      'tanggal_mulai': instance.tanggalMulai?.toIso8601String(),
       'tanggal_berakhir': instance.tanggalBerakhir?.toIso8601String(),
       'status_pengiriman': instance.statusPengiriman,
       'jenis_pengiriman': instance.jenisPengiriman,

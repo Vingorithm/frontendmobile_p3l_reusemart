@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/sub_pembelian.dart';
+import '../models/pembelian.dart';
 import '../api_service.dart';
 
 class SubPembelianService extends BaseApiService {
@@ -32,6 +33,35 @@ class SubPembelianService extends BaseApiService {
       }
     } catch (e) {
       print('Error fetching sub pembelian by id: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Pembelian>> getHistoryPembelianByPembeliId(String pembeliId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${BaseApiService.baseUrl}/sub-pembelian/byIdPembeli/$pembeliId'),
+        headers: headers,
+      );
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData is List<dynamic>) {
+          return jsonData
+              .map((item) => Pembelian.fromJson(item['pembelian'] as Map<String, dynamic>))
+              .toList();
+        } else {
+          throw Exception('Unexpected JSON structure: Expected a List');
+        }
+      } else if (response.statusCode == 404) {
+        return [];
+      } else {
+        throw Exception('Failed to load purchase history: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching purchase history: $e');
       rethrow;
     }
   }

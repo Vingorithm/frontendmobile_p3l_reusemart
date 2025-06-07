@@ -9,9 +9,9 @@ class Pengiriman {
   @JsonKey(name: 'id_pembelian')
   final String idPembelian;
   @JsonKey(name: 'id_pengkonfirmasi')
-  final String idPengkonfirmasi;
+  final String? idPengkonfirmasi;
   @JsonKey(name: 'tanggal_mulai')
-  final DateTime tanggalMulai;
+  final DateTime? tanggalMulai;
   @JsonKey(name: 'tanggal_berakhir')
   final DateTime? tanggalBerakhir;
   @JsonKey(name: 'status_pengiriman')
@@ -22,8 +22,8 @@ class Pengiriman {
   Pengiriman({
     required this.idPengiriman,
     required this.idPembelian,
-    required this.idPengkonfirmasi,
-    required this.tanggalMulai,
+    this.idPengkonfirmasi, // Allow null
+    this.tanggalMulai,
     this.tanggalBerakhir,
     required this.statusPengiriman,
     required this.jenisPengiriman,
