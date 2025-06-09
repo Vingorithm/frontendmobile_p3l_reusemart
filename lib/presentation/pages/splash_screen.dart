@@ -108,33 +108,23 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateToNextScreen() async {
-    try {
-      final token = await getToken();
-      
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) {
-              return token != null ? const RootScreen() : const LoginPage();
-            },
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      }
+    await Future.delayed(const Duration(milliseconds: 2500));
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return const RootScreen();
+          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+      );
     }
   }
 

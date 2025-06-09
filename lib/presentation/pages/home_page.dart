@@ -1,6 +1,7 @@
 // lib/presentation/pages/home_page.dart
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../data/api_service.dart';
 import '../../data/services/barang_service.dart';
 import '../../core/theme/color_pallete.dart';
@@ -24,11 +25,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _contentAnimationController;
   late Animation<double> _headerFadeAnimation;
   late Animation<Offset> _headerSlideAnimation;
+  
+  // Carousel controller dan timer
+  late PageController _carouselController;
+  late Timer _carouselTimer;
+  int _currentCarouselIndex = 0;
+
+  // Data promosi carousel
+  final List<Map<String, dynamic>> _promoData = [
+    {
+      'title': 'Flash Sale 70%',
+      'subtitle': 'Elektronik Berkualitas',
+      'image': 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+      'gradient': [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+    },
+    {
+      'title': 'Koleksi Terbaru',
+      'subtitle': 'Fashion & Aksesoris',
+      'image': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600',
+      'gradient': [Color(0xFF667eea), Color(0xFF764ba2)],
+    },
+    {
+      'title': 'Eco Friendly',
+      'subtitle': 'Produk Ramah Lingkungan',
+      'image': 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600',
+      'gradient': [Color(0xFF11998e), Color(0xFF38ef7d)],
+    },
+    {
+      'title': 'Gratis Ongkir',
+      'subtitle': 'Minimum Pembelian 100K',
+      'image': 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600',
+      'gradient': [Color(0xFFf093fb), Color(0xFFf5576c)],
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
     _futureBarang = _apiService.getAllBarang();
+    
+    // Initialize carousel
+    _carouselController = PageController();
+    _startCarouselTimer();
     
     // Initialize animations
     _headerAnimationController = AnimationController(
@@ -53,10 +91,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _contentAnimationController.forward();
   }
 
+  void _startCarouselTimer() {
+    _carouselTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_carouselController.hasClients) {
+        _currentCarouselIndex = (_currentCarouselIndex + 1) % _promoData.length;
+        _carouselController.animateToPage(
+          _currentCarouselIndex,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
   @override
   void dispose() {
     _headerAnimationController.dispose();
     _contentAnimationController.dispose();
+    _carouselController.dispose();
+    _carouselTimer.cancel();
     super.dispose();
   }
 
@@ -74,24 +127,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         .toList();
   }
 
-  // Get unique categories with curated images
+  // Get unique categories dengan icon yang sesuai
   List<Map<String, dynamic>> _getCategories(List<Barang> barang) {
     final categories = <String, Map<String, dynamic>>{};
-    final categoryImages = {
-      'Elektronik & Gadget': 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400',
-      'Kosmetik & Perawatan Diri': 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400',
-      'Buku, Alat Tulis, & Peralatan Sekolah': 'https://images.unsplash.com/photo-1503676260728-332c239b4121?w=400',
-      'Hobi, Mainan, & Koleksi': 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400',
-      'Otomotif & Aksesori': 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400',
-      'Pakaian & Aksesori': 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400',
+    final categoryIcons = {
+      'Elektronik & Gadget': Icons.devices_outlined,
+      'Kosmetik & Perawatan Diri': Icons.face_outlined,
+      'Buku, Alat Tulis, & Peralatan Sekolah': Icons.book_outlined,
+      'Hobi, Mainan, & Koleksi': Icons.toys_outlined,
+      'Otomotif & Aksesori': Icons.directions_car_outlined,
+      'Pakaian & Aksesori': Icons.checkroom_outlined,
+    };
+
+    final categoryColors = {
+      'Elektronik & Gadget': const Color(0xFF3498DB),
+      'Kosmetik & Perawatan Diri': const Color(0xFFE91E63),
+      'Buku, Alat Tulis, & Peralatan Sekolah': const Color(0xFF9C27B0),
+      'Hobi, Mainan, & Koleksi': const Color(0xFFFF9800),
+      'Otomotif & Aksesori': const Color(0xFF607D8B),
+      'Pakaian & Aksesori': const Color(0xFF795548),
     };
 
     for (var item in barang) {
       if (!categories.containsKey(item.kategoriBarang)) {
         categories[item.kategoriBarang] = {
           'name': item.kategoriBarang,
-          'image': categoryImages[item.kategoriBarang] ?? 'https://via.placeholder.com/400',
-          'discount': null,
+          'icon': categoryIcons[item.kategoriBarang] ?? Icons.category_outlined,
+          'color': categoryColors[item.kategoriBarang] ?? AppColors.primary,
         };
       }
     }
@@ -119,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: FadeInAnimation(
                 delay: 300,
                 child: SearchBarWidget(
-                  hintText: 'Ketik “Kursi Estetik” 🌟',
+                  hintText: 'Ketik "Kursi Estetik" 🔍',
                   onSearch: (query) {
                     setState(() {
                       _searchQuery = query;
@@ -156,8 +218,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       padding: const EdgeInsets.only(bottom: 24),
                       child: Column(
                         children: [
-                          // Categories Section
-                          _buildCategorySection(context, categories),
+                          // Promotional Carousel
+                          _buildPromotionalCarousel(),
+                          
+                          // Quick Stats
+                          _buildQuickStats(barangList),
+                          
+                          // Categories Horizontal List Section
+                          _buildCategoryHorizontalList(context, categories, barangList),
                           
                           // Popular Products Section
                           _buildProductSection(context, barangList),
@@ -208,108 +276,109 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Brand and welcome section
+                // Top bar with brand and notifications
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Row(
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.recycling_rounded,
+                            color: AppColors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppColors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Icons.recycling,
-                                color: AppColors.white,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
                             Text(
                               'ReuseMart',
                               style: Theme.of(context).textTheme.displayMedium!.copyWith(
                                 color: AppColors.white,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 24,
                                 letterSpacing: 1.2,
+                              ),
+                            ),
+                            Text(
+                              'Kualitas Terbaik, QC Terbaik',
+                              style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                                color: AppColors.white.withOpacity(0.8),
+                                fontSize: 12,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Tempat terbaik untuk produk bekas berkualitas',
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            color: AppColors.white.withOpacity(0.9),
-                            fontSize: 16,
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.favorite_outline,
+                            color: AppColors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Stack(
+                            children: [
+                              Icon(
+                                Icons.notifications_outlined,
+                                color: AppColors.white,
+                                size: 20,
+                              ),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.secondary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    // Notification bell
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Stack(
-                        children: [
-                          Icon(
-                            Icons.notifications_outlined,
-                            color: AppColors.white,
-                            size: 24,
-                          ),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: AppColors.secondary,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                // Environmental impact message
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.white.withOpacity(0.3),
-                    ),
+                // Welcome message
+                Text(
+                  'Selamat Datang! 👋',
+                  style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w600,
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.eco,
-                        color: AppColors.white,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Setiap pembelian Anda membantu mengurangi limbah!',
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Temukan produk bekas berkualitas dengan harga terbaik',
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: AppColors.white.withOpacity(0.9),
                   ),
                 ),
               ],
@@ -320,20 +389,171 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStatsOverview(List<Barang> barangList) {
+  Widget _buildPromotionalCarousel() {
     return FadeInAnimation(
       delay: 400,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        height: 180,
+        child: PageView.builder(
+          controller: _carouselController,
+          onPageChanged: (index) {
+            setState(() {
+              _currentCarouselIndex = index;
+            });
+          },
+          itemCount: _promoData.length,
+          itemBuilder: (context, index) {
+            final promo = _promoData[index];
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: promo['gradient'],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: promo['gradient'][0].withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Background pattern
+                  Positioned(
+                    right: -20,
+                    top: -20,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 30,
+                    bottom: -30,
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.05),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  // Content
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                promo['title'],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                promo['subtitle'],
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Belanja Sekarang',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: CachedNetworkImage(
+                              imageUrl: promo['image'],
+                              height: 120,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: Colors.white.withOpacity(0.1),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: Colors.white.withOpacity(0.1),
+                                child: const Icon(
+                                  Icons.image_not_supported,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickStats(List<Barang> barangList) {
+    return FadeInAnimation(
+      delay: 500,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -342,35 +562,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Expanded(
               child: _buildStatItem(
                 icon: Icons.inventory_2_outlined,
-                label: 'Total Produk',
-                value: '${barangList.length}',
+                label: 'Produk',
+                value: '${barangList.length}+',
                 color: AppColors.primary,
               ),
             ),
             Container(
               width: 1,
-              height: 40,
+              height: 30,
               color: AppColors.gray.withOpacity(0.3),
             ),
             Expanded(
               child: _buildStatItem(
-                icon: Icons.category_outlined,
-                label: 'Kategori',
-                value: '${_getCategories(barangList).length}',
-                color: AppColors.secondary,
-              ),
-            ),
-            Container(
-              width: 1,
-              height: 40,
-              color: AppColors.gray.withOpacity(0.3),
-            ),
-            Expanded(
-              child: _buildStatItem(
-                icon: Icons.verified_outlined,
-                label: 'Berkualitas',
+                icon: Icons.verified_user_outlined,
+                label: 'Terjamin',
                 value: '100%',
-                color: AppColors.primary,
+                color: const Color(0xFF00C853),
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 30,
+              color: AppColors.gray.withOpacity(0.3),
+            ),
+            Expanded(
+              child: _buildStatItem(
+                icon: Icons.local_shipping_outlined,
+                label: 'Gratis Ongkir',
+                value: 'Ya',
+                color: AppColors.secondary,
               ),
             ),
           ],
@@ -388,31 +608,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
             color: color,
-            size: 24,
+            size: 18,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           value,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             color: color,
           ),
         ),
-        const SizedBox(height: 4),
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 10,
             color: AppColors.textSecondary,
           ),
         ),
@@ -420,122 +639,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCategorySection(BuildContext context, List<Map<String, dynamic>> categories) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.primary, AppColors.secondary],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.dashboard_customize_rounded,
-                          color: AppColors.white,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Kategori Produk',
-                        style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                          color: AppColors.textPrimary,
-                          fontSize: 22,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Jelajahi koleksi unggulan kami',
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        // Menggunakan tinggi yang lebih besar untuk card yang lebih lebar
-        SizedBox(
-          height: 220, // Disesuaikan dengan tinggi CategoryCard yang baru (200 + margin)
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(), // Menambahkan bounce effect
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              return FadeInAnimation(
-                delay: 500 + (index * 100),
-                child: CategoryCard(
-                  name: category['name'],
-                  imageUrl: category['image'],
-                  discount: category['discount'],
-                  onTap: () {
-                    // Animasi feedback saat kategori dipilih
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Membuka kategori: ${category['name']}'),
-                        backgroundColor: AppColors.primary,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                    debugPrint('Category tapped: ${category['name']}');
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-        // Menambahkan indicator dots untuk carousel effect
-        if (categories.length > 1)
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                categories.length > 5 ? 5 : categories.length, // Maksimal 5 dots
-                (index) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: index == 0 
-                      ? AppColors.primary 
-                      : AppColors.primary.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildProductSection(BuildContext context, List<Barang> barangList) {
+  Widget _buildCategoryHorizontalList(BuildContext context, List<Map<String, dynamic>> categories, List<Barang> barangList) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -543,45 +647,204 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Row(
             children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.apps_rounded,
+                  color: AppColors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.primary, AppColors.secondary],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                  Text(
+                    'Kategori',
+                    style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Pilih kategori favorit Anda',
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // Horizontal scrollable categories
+        FadeInAnimation(
+          delay: 600,
+          child: SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final category = categories[index];
+                return Container(
+                  width: 100,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: FadeInAnimation(
+                    delay: 600 + (index * 100),
+                    child: GestureDetector(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Kategori: ${category['name']}'),
+                            backgroundColor: category['color'],
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            duration: const Duration(seconds: 2),
                           ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.local_fire_department,
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
                           color: AppColors.white,
-                          size: 20,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: category['color'].withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                category['icon'],
+                                color: category['color'],
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              category['name'].length > 12 
+                                  ? '${category['name'].substring(0, 10)}...' 
+                                  : category['name'],
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${_getProductCount(barangList, category['name'])} item',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductSection(BuildContext context, List<Barang> barangList) {
+    // Increased product count from 6 to 12
+    final displayedProductCount = barangList.length > 16 ? 16 : barangList.length;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.primary, AppColors.secondary],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.local_fire_department_rounded,
+                      color: AppColors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
                         'Produk Terpopuler',
-                        style: Theme.of(context).textTheme.displaySmall!.copyWith(
+                        style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                           color: AppColors.textPrimary,
-                          fontSize: 20,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Pilihan favorit pelanggan',
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Pilihan favorit pelanggan',
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
                 ],
+              ),
+              TextButton(
+                onPressed: () {
+                  // Navigate to all products
+                },
+                child: Text(
+                  'Lihat Semua',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ],
           ),
@@ -596,11 +859,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
-          itemCount: barangList.length,
+          itemCount: displayedProductCount,
           itemBuilder: (context, index) {
             final barang = barangList[index];
             return FadeInAnimation(
-              delay: 600 + (index * 100),
+              delay: 800 + (index * 100),
               child: ProductCard(
                 name: barang.nama,
                 imageUrl: barang.imageUrls.isNotEmpty
@@ -739,6 +1002,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 color: AppColors.textSecondary,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

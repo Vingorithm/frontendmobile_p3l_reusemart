@@ -77,27 +77,33 @@ class _RootScreenState extends State<RootScreen> {
   String role = "Guest";
   bool isLoading = true;
 
-   @override
+  @override
   void initState() {
     super.initState();
     _getRoleFromToken();
   }
 
   Future<void> _getRoleFromToken() async {
-    final token = await getToken();
-
-    if (token != null) {
-      final decoded = decodeToken(token);
-      if (decoded != null && decoded.containsKey('role')) {
-        setState(() {
-          role = decoded['role'];
-        });
+    try {
+      final token = await getToken();
+      if (token != null) {
+        final decoded = decodeToken(token);
+        if (decoded != null && decoded.containsKey('role')) {
+          setState(() {
+            role = decoded['role'];
+          });
+        }
       }
+    } catch (e) {
+      // Handle error silently, default to Guest role
+      setState(() {
+        role = "Guest";
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    setState(() {
-      isLoading = false;
-    });
   }
 
   List<Widget> setScreens(String role) {
@@ -127,20 +133,14 @@ class _RootScreenState extends State<RootScreen> {
           const HistoriKomisiPage(),
           const ProfileScreen(),
         ];
+      case "Guest":
       default:
         return [
           const HomeScreen(),
-          const ProfileScreen(),
+          const ProfileScreen(), // Or a LoginScreen for guests
         ];
     }
   }
-
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const MerchandiseScreen(),
-    const TransactionScreen(),
-    const ProfileScreen(),
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -157,13 +157,12 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    
+
     return Scaffold(
       body: PageView(
         controller: _pageController,
@@ -171,9 +170,10 @@ class _RootScreenState extends State<RootScreen> {
         children: setScreens(role),
       ),
       bottomNavigationBar: PersistentBottomNavBar(
-          selectedIndex: _selectedIndex,
-          onItemSelected: _onItemTapped,
-          role: role),
+        selectedIndex: _selectedIndex,
+        onItemSelected: _onItemTapped,
+        role: role,
+      ),
     );
   }
 }

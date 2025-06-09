@@ -17,6 +17,7 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
   final MerchandiseService _apiService = MerchandiseService();
   late Future<List<Merchandise>> _futureMerchandise;
   String _searchQuery = '';
+  String _selectedFilter = 'All'; // Track selected filter option
 
   @override
   void initState() {
@@ -24,17 +25,93 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
     _futureMerchandise = _apiService.getAllMerchandise();
   }
 
-  // Filter merchandise based on search query
-  List<Merchandise> _filterMerchandise(List<Merchandise> merchandise, String query) {
-    if (query.isEmpty) {
-      return merchandise;
+  // Filter merchandise based on search query and hargaPoin
+  List<Merchandise> _filterMerchandise(List<Merchandise> merchandise, String query, String filter) {
+    List<Merchandise> filteredList = merchandise;
+
+    // Apply search query filter
+    if (query.isNotEmpty) {
+      final lowerQuery = query.toLowerCase();
+      filteredList = filteredList
+          .where((item) =>
+              item.namaMerchandise.toLowerCase().contains(lowerQuery) ||
+              item.deskripsi.toLowerCase().contains(lowerQuery))
+          .toList();
     }
-    final lowerQuery = query.toLowerCase();
-    return merchandise
-        .where((item) =>
-            item.namaMerchandise.toLowerCase().contains(lowerQuery) ||
-            item.deskripsi.toLowerCase().contains(lowerQuery))
-        .toList();
+
+    // Apply hargaPoin filter
+    switch (filter) {
+      case 'Below 100':
+        filteredList = filteredList.where((item) => item.hargaPoin < 100).toList();
+        break;
+      case '100-500':
+        filteredList = filteredList.where((item) => item.hargaPoin >= 100 && item.hargaPoin <= 500).toList();
+        break;
+      case 'Above 500':
+        filteredList = filteredList.where((item) => item.hargaPoin > 500).toList();
+        break;
+      case 'All':
+      default:
+        // No additional filtering needed
+        break;
+    }
+
+    return filteredList;
+  }
+
+  // Show filter options in a modal bottom sheet
+  void _showFilterOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Filter by Points',
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              _buildFilterOption('All', 'All Points'),
+              _buildFilterOption('Below 100', 'Below 100 Points'),
+              _buildFilterOption('100-500', '100 - 500 Points'),
+              _buildFilterOption('Above 500', 'Above 500 Points'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Build individual filter option
+  Widget _buildFilterOption(String value, String label) {
+    return ListTile(
+      title: Text(
+        label,
+        style: TextStyle(
+          color: _selectedFilter == value ? AppColors.primary : AppColors.textPrimary,
+          fontWeight: _selectedFilter == value ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      trailing: _selectedFilter == value
+          ? Icon(Icons.check, color: AppColors.primary)
+          : null,
+      onTap: () {
+        setState(() {
+          _selectedFilter = value;
+        });
+        Navigator.pop(context);
+      },
+    );
   }
 
   @override
@@ -42,28 +119,16 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        title: Text(
+        title: const Text(
           'Merchandise',
           style: TextStyle(
-            color: AppColors.white,
             fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
           ),
         ),
-        centerTitle: true,
+        backgroundColor: AppColors.background,
+        elevation: 0,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.shopping_cart_outlined,
-              color: AppColors.white,
-            ),
-            onPressed: () {
-              // Navigate to cart
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -86,16 +151,14 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          // Filter functionality
-                        },
-                        icon: Icon(Icons.filter_list, size: 20),
-                        label: Text('Filter'),
+                        onPressed: _showFilterOptions,
+                        icon: const Icon(Icons.filter_list, size: 20),
+                        label: const Text('Filter'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.white,
                           foregroundColor: AppColors.primary,
                           elevation: 0,
-                          side: BorderSide(color: AppColors.primary),
+                          side: const BorderSide(color: AppColors.primary),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -109,13 +172,13 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
                         onPressed: () {
                           // Sort functionality
                         },
-                        icon: Icon(Icons.sort, size: 20),
-                        label: Text('Urutkan'),
+                        icon: const Icon(Icons.sort, size: 20),
+                        label: const Text('Urutkan'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.white,
                           foregroundColor: AppColors.primary,
                           elevation: 0,
-                          side: BorderSide(color: AppColors.primary),
+                          side: const BorderSide(color: AppColors.primary),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -128,7 +191,7 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
               ],
             ),
           ),
-          
+
           // Main Content
           Expanded(
             child: RefreshIndicator(
@@ -149,9 +212,9 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
                     return _buildEmptyState();
                   }
 
-                  final merchandiseList = _filterMerchandise(snapshot.data!, _searchQuery);
+                  final merchandiseList = _filterMerchandise(snapshot.data!, _searchQuery, _selectedFilter);
 
-                  if (merchandiseList.isEmpty && _searchQuery.isNotEmpty) {
+                  if (merchandiseList.isEmpty && (_searchQuery.isNotEmpty || _selectedFilter != 'All')) {
                     return _buildSearchEmptyState();
                   }
 
@@ -210,7 +273,7 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Coba gunakan kata kunci lain',
+              'Coba gunakan kata kunci lain atau filter lain',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -221,6 +284,7 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
               onPressed: () {
                 setState(() {
                   _searchQuery = '';
+                  _selectedFilter = 'All';
                 });
               },
               style: ElevatedButton.styleFrom(

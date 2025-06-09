@@ -16,11 +16,11 @@ Pembelian _$PembelianFromJson(Map<String, dynamic> json) => Pembelian(
       tanggalPelunasan: json['tanggal_pelunasan'] == null
           ? null
           : DateTime.parse(json['tanggal_pelunasan'] as String),
-      totalHarga: (json['total_harga'] as num).toDouble(),
-      ongkir: (json['ongkir'] as num).toDouble(),
-      potonganPoin: (json['potongan_poin'] as num).toInt(),
-      totalBayar: (json['total_bayar'] as num).toDouble(),
-      poinDiperoleh: (json['poin_diperoleh'] as num).toInt(),
+      totalHarga: Pembelian._stringToDouble(json['total_harga']),
+      ongkir: Pembelian._stringToDouble(json['ongkir']),
+      potonganPoin: Pembelian._stringToInt(json['potongan_poin']),
+      totalBayar: Pembelian._stringToDouble(json['total_bayar']),
+      poinDiperoleh: Pembelian._stringToInt(json['poin_diperoleh']),
       statusPembelian: json['status_pembelian'] as String,
       customerService: json['CustomerService'] == null
           ? null
@@ -31,6 +31,9 @@ Pembelian _$PembelianFromJson(Map<String, dynamic> json) => Pembelian(
       alamat: json['Alamat'] == null
           ? null
           : AlamatPembeli.fromJson(json['Alamat'] as Map<String, dynamic>),
+      pengiriman: json['pengiriman'] == null
+          ? null
+          : Pengiriman.fromJson(json['pengiriman'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$PembelianToJson(Pembelian instance) => <String, dynamic>{
@@ -50,4 +53,5 @@ Map<String, dynamic> _$PembelianToJson(Pembelian instance) => <String, dynamic>{
       'CustomerService': instance.customerService?.toJson(),
       'pembeli': instance.pembeli?.toJson(),
       'Alamat': instance.alamat?.toJson(),
+      'pengiriman': instance.pengiriman?.toJson(),
     };

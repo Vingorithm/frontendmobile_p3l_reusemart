@@ -9,10 +9,13 @@ part of 'transaksi.dart';
 Transaksi _$TransaksiFromJson(Map<String, dynamic> json) => Transaksi(
       idTransaksi: json['id_transaksi'] as String,
       idSubPembelian: json['id_sub_pembelian'] as String,
-      komisiReusemart: (json['komisi_reusemart'] as num).toDouble(),
-      komisiHunter: (json['komisi_hunter'] as num).toDouble(),
-      pendapatan: (json['pendapatan'] as num).toDouble(),
-      bonusCepat: (json['bonus_cepat'] as num).toDouble(),
+      komisiReusemart: Transaksi._stringToDouble(json['komisi_reusemart']),
+      komisiHunter: Transaksi._stringToDouble(json['komisi_hunter']),
+      pendapatan: Transaksi._stringToDouble(json['pendapatan']),
+      bonusCepat: Transaksi._stringToDouble(json['bonus_cepat']),
+      subPembelian: json['SubPembelian'] == null
+          ? null
+          : SubPembelian.fromJson(json['SubPembelian'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$TransaksiToJson(Transaksi instance) => <String, dynamic>{
@@ -22,4 +25,5 @@ Map<String, dynamic> _$TransaksiToJson(Transaksi instance) => <String, dynamic>{
       'komisi_hunter': instance.komisiHunter,
       'pendapatan': instance.pendapatan,
       'bonus_cepat': instance.bonusCepat,
+      'SubPembelian': instance.subPembelian?.toJson(),
     };

@@ -505,13 +505,6 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
         ),
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.textPrimary,
-          ),
-        ),
         actions: [
           IconButton(
             onPressed: _loadUserDataAndHistory,
