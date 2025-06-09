@@ -35,4 +35,20 @@ class PegawaiService extends BaseApiService {
       rethrow;
     }
   }
+
+  Future<Pegawai> getPegawaiByIdAkun(String id) async {
+    try {
+      final response = await http.get(Uri.parse('${BaseApiService.baseUrl}/pegawai/byIdAkun/$id'), headers: headers);
+      if (response.statusCode == 200) {
+        return Pegawai.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 404) {
+        throw Exception('Pegawai not found');
+      } else {
+        throw Exception('Failed to load pegawai: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching pegawai by id akun: $e');
+      rethrow;
+    }
+  }
 }

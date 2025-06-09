@@ -6,8 +6,10 @@ import '../../main.dart';
 import '../../presentation/widgets/confirm_modal.dart';
 import '../../data/models/penitip.dart';
 import '../../data/models/pembeli.dart';
+import '../../data/models/pegawai.dart';
 import '../../data/services/penitip_service.dart';
 import '../../data/services/pembeli_service.dart';
+import '../../data/services/pegawai_service.dart';
 import 'about_page.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -22,14 +24,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userId = '';
   String _userRole = '';
   bool _isLoggedIn = false;
-  
+
   // Data khusus untuk penitip
   Penitip? _penitipData;
   bool _isLoadingPenitipData = false;
-  
+
   // Data khusus untuk pembeli
   Pembeli? _pembeliData;
   bool _isLoadingPembeliData = false;
+
+  // Data khusus untuk pegawai
+  Pegawai? _pegawaiData;
+  bool _isLoadingPegawaiData = false;
 
   @override
   void initState() {
@@ -58,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _userRole = decoded['role'] ?? 'User';
         _isLoggedIn = true;
       });
-      
+
       // Jika role adalah penitip, load data penitip
       if (_userRole.toLowerCase() == 'penitip') {
         await _loadPenitipData();
@@ -66,6 +72,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // Jika role adalah pembeli, load data pembeli
       else if (_userRole.toLowerCase() == 'pembeli') {
         await _loadPembeliData();
+      }
+      // Jika role adalah kurir atau hunter, load data pegawai
+      else if (_userRole.toLowerCase() == 'kurir' || _userRole.toLowerCase() == 'hunter') {
+        await _loadPegawaiData();
       }
     } else {
       setState(() {
@@ -88,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final penitipRepository = PenitipService();
       final penitipData = await penitipRepository.getPenitipByIdAkun(_userId);
-      
+
       setState(() {
         _penitipData = penitipData;
         _isLoadingPenitipData = false;
@@ -112,13 +122,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // Cari pembeli berdasarkan id_akun
       final pembeliService = PembeliService();
       final allPembeli = await pembeliService.getAllPembeli();
-      
+
       // Cari pembeli yang id_akun nya sesuai dengan userId
       final pembeliData = allPembeli.firstWhere(
         (pembeli) => pembeli.idAkun == _userId,
         orElse: () => throw Exception('Data pembeli tidak ditemukan'),
       );
-      
+
       setState(() {
         _pembeliData = pembeliData;
         _isLoadingPembeliData = false;
@@ -129,6 +139,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _errorMessage = 'Gagal memuat data pembeli: ${e.toString()}';
       });
       print('Error loading pembeli data: $e');
+    }
+  }
+
+  Future<void> _loadPegawaiData() async {
+    setState(() {
+      _isLoadingPegawaiData = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final pegawaiService = PegawaiService();
+      final pegawai = await pegawaiService.getPegawaiByIdAkun(_userId);
+
+      // Cari pembeli yang id_akun nya sesuai dengan userId
+      print(pegawai);
+
+      setState(() {
+        _pegawaiData = pegawai;
+        _isLoadingPegawaiData = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingPegawaiData = false;
+        _errorMessage = 'Gagal memuat data pegawai: ${e.toString()}';
+      });
+      print('Error loading pegawai data: $e');
     }
   }
 
@@ -181,20 +217,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     List<Widget> stars = [];
     int fullStars = rating.floor();
     bool hasHalfStar = (rating - fullStars) >= 0.5;
-    
+
     for (int i = 0; i < fullStars; i++) {
       stars.add(const Icon(Icons.star, color: Colors.amber, size: 16));
     }
-    
+
     if (hasHalfStar) {
       stars.add(const Icon(Icons.star_half, color: Colors.amber, size: 16));
     }
-    
+
     int remainingStars = 5 - stars.length;
     for (int i = 0; i < remainingStars; i++) {
       stars.add(const Icon(Icons.star_border, color: Colors.amber, size: 16));
     }
-    
+
     return Row(children: stars);
   }
 
@@ -309,12 +345,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         radius: 50,
                         backgroundColor: AppColors.white,
                         child: Text(
-                          _isLoggedIn && _email.isNotEmpty && _email != 'Loading...'
-                              ? (_penitipData?.namaPenitip.isNotEmpty == true 
+                          _isLoggedIn &&
+                                  _email.isNotEmpty &&
+                                  _email != 'Loading...'
+                              ? (_penitipData?.namaPenitip.isNotEmpty == true
                                   ? _penitipData!.namaPenitip[0].toUpperCase()
                                   : _pembeliData?.nama.isNotEmpty == true
-                                    ? _pembeliData!.nama[0].toUpperCase()
-                                    : _email[0].toUpperCase())
+                                      ? _pembeliData!.nama[0].toUpperCase()
+                                      : _pegawaiData?.namaPegawai.isNotEmpty == true
+                                      ? _pegawaiData!.namaPegawai[0].toUpperCase()
+                                      : _email[0].toUpperCase())
                               : '?',
                           style: TextStyle(
                             fontSize: 36,
@@ -325,10 +365,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Name or Email
                     Text(
-                      _penitipData?.namaPenitip ?? _pembeliData?.nama ?? _email,
+                      _penitipData?.namaPenitip ?? _pembeliData?.nama ?? _pegawaiData?.namaPegawai ?? _email,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -336,9 +376,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     // Email (jika ada nama penitip atau pembeli)
-                    if (_penitipData?.namaPenitip != null || _pembeliData?.nama != null) ...[
+                    if (_penitipData?.namaPenitip != null ||
+                        _pembeliData?.nama != null || _pegawaiData?.namaPegawai != null) ...[
                       const SizedBox(height: 4),
                       Text(
                         _email,
@@ -349,7 +390,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         textAlign: TextAlign.center,
                       ),
                     ],
-                    
+
                     if (_isLoggedIn && _userRole.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       // Role Badge with Badge indicator for penitip
@@ -396,7 +437,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     ],
-                    
+
                     if (_isLoggedIn && _userId.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
@@ -453,7 +494,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Profile Menu Section
             _buildSectionTitle('Account Settings'),
             const SizedBox(height: 12),
-            
+
             _buildMenuItem(
               icon: Icons.person_outline,
               title: 'Edit Profile',
@@ -463,14 +504,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _handleSaveChanges();
               },
             ),
-            
+
             _buildMenuItem(
               icon: Icons.notifications_outlined,
               title: 'Notifications',
               subtitle: 'Manage your notification preferences',
               onTap: () {},
             ),
-            
+
             _buildMenuItem(
               icon: Icons.security_outlined,
               title: 'Privacy & Security',
@@ -650,7 +691,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-          
+
           // Stats Grid
           Padding(
             padding: const EdgeInsets.all(20),
@@ -674,16 +715,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icons.star_rate,
                         iconColor: Colors.orange,
                         title: 'Rating',
-                        value: '${_penitipData?.rating.toStringAsFixed(1) ?? '0.0'}',
+                        value:
+                            '${_penitipData?.rating.toStringAsFixed(1) ?? '0.0'}',
                         subtitle: 'dari 5.0',
-                        customWidget: _buildRatingStars(_penitipData?.rating ?? 0.0),
+                        customWidget:
+                            _buildRatingStars(_penitipData?.rating ?? 0.0),
                       ),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Bottom Row - Earnings and Badge
                 Row(
                   children: [
@@ -699,16 +742,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: _buildStatItem(
-                        icon: _penitipData?.badge == true ? Icons.verified : Icons.verified_outlined,
-                        iconColor: _penitipData?.badge == true ? Colors.amber : Colors.grey,
+                        icon: _penitipData?.badge == true
+                            ? Icons.verified
+                            : Icons.verified_outlined,
+                        iconColor: _penitipData?.badge == true
+                            ? Colors.amber
+                            : Colors.grey,
                         title: 'Badge Status',
-                        value: _penitipData?.badge == true ? 'Top Seller' : 'Tidak Ada',
-                        subtitle: _penitipData?.badge == true ? 'penitip top seller bulan ini' : 'penitip tidak memiliki badge',
+                        value: _penitipData?.badge == true
+                            ? 'Top Seller'
+                            : 'Tidak Ada',
+                        subtitle: _penitipData?.badge == true
+                            ? 'penitip top seller bulan ini'
+                            : 'penitip tidak memiliki badge',
                       ),
                     ),
                   ],
                 ),
-                
+
                 // Registration Date
                 if (_penitipData?.tanggalRegistrasi != null) ...[
                   const SizedBox(height: 16),
@@ -864,7 +915,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-          
+
           // Stats Grid
           Padding(
             padding: const EdgeInsets.all(20),
@@ -894,7 +945,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
-                
+
                 // Registration Date
                 if (_pembeliData?.tanggalRegistrasi != null) ...[
                   const SizedBox(height: 16),
@@ -924,7 +975,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ],
-                
+
                 // Additional Info Card
                 const SizedBox(height: 16),
                 Container(
@@ -1043,10 +1094,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _formatRegistrationDate(DateTime date) {
     final months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
     ];
-    
+
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
