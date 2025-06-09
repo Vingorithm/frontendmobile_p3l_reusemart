@@ -64,12 +64,10 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
           return;
         }
 
-        // Get penitip data first
         final penitipService = PenitipService();
         final penitipData = await penitipService.getPenitipByIdAkun(_userId);
         _penitipId = penitipData.idPenitip;
 
-        // Then get penitipan history
         await _loadPenitipanHistory();
       } else {
         setState(() {
@@ -89,7 +87,6 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
   Future<void> _loadPenitipanHistory() async {
     try {
       final penitipanService = PenitipanService();
-      // Assuming you'll add this method to PenitipanService
       final penitipanList = await penitipanService.getPenitipanByIdPenitip(_penitipId);
 
       setState(() {
@@ -214,7 +211,6 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
       ),
       child: Column(
         children: [
-          // Header with status
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -253,24 +249,21 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                   'ID: ${penitipan.idPenitipan}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: Colors.grey[800], // Darkened from AppColors.textSecondary
                   ),
                 ),
               ],
             ),
           ),
           
-          // Content
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Item info
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Image placeholder
                     Container(
                       width: 60,
                       height: 60,
@@ -278,7 +271,7 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                         color: AppColors.background,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: AppColors.textSecondary.withOpacity(0.2),
+                          color: Colors.grey[400]!, // Darkened border
                         ),
                       ),
                       child: barang?.gambar != null && barang!.gambar.isNotEmpty
@@ -290,7 +283,7 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Icon(
                                     Icons.image_not_supported,
-                                    color: AppColors.textSecondary,
+                                    color: Colors.grey[600], // Darkened
                                     size: 24,
                                   );
                                 },
@@ -298,7 +291,7 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                             )
                           : Icon(
                               Icons.inventory_2,
-                              color: AppColors.textSecondary,
+                              color: Colors.grey[600], // Darkened
                               size: 24,
                             ),
                     ),
@@ -309,10 +302,10 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                         children: [
                           Text(
                             barang?.nama ?? 'Nama barang tidak tersedia',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: Colors.grey[900], // Darkened from AppColors.textPrimary
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -332,7 +325,7 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                             'Kategori: ${barang?.kategoriBarang ?? 'N/A'}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: Colors.grey[800], // Darkened from AppColors.textSecondary
                             ),
                           ),
                         ],
@@ -343,7 +336,6 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                 
                 const SizedBox(height: 16),
                 
-                // Dates info
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -373,7 +365,6 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                   ),
                 ),
                 
-                // Extension info
                 if (penitipan.perpanjangan) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -391,7 +382,7 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                         Icon(
                           Icons.extension,
                           size: 14,
-                          color: Colors.amber[700],
+                          color: Colors.amber[800], // Darkened from Colors.amber[700]
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -399,7 +390,7 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Colors.amber[700],
+                            color: Colors.amber[800], // Darkened from Colors.amber[700]
                           ),
                         ),
                       ],
@@ -420,23 +411,23 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
         Icon(
           icon,
           size: 14,
-          color: AppColors.textSecondary,
+          color: Colors.grey[800], // Darkened from AppColors.textSecondary
         ),
         const SizedBox(width: 6),
         Text(
           '$label:',
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.textSecondary,
+            color: Colors.grey[800], // Darkened from AppColors.textSecondary
           ),
         ),
         const Spacer(),
         Text(
           date,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textPrimary,
+            color: Colors.grey[900], // Darkened from AppColors.textPrimary
           ),
         ),
       ],
@@ -553,11 +544,8 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                 )
               : Column(
                   children: [
-                    // Filter chips
                     _buildFilterChips(),
                     const SizedBox(height: 8),
-                    
-                    // Results count
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
@@ -572,10 +560,7 @@ class _HistoriPenitipanPageState extends State<HistoriPenitipanPage> {
                         ],
                       ),
                     ),
-                    
                     const SizedBox(height: 8),
-                    
-                    // List
                     Expanded(
                       child: _filteredPenitipan.isEmpty
                           ? _buildEmptyState()

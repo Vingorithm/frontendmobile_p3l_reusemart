@@ -69,11 +69,9 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
           return;
         }
 
-        // Get pembeli data first
         final pembeli = await _pembeliService.getPembeliByIdAkun(_currentUserId!);
         _currentPembeliId = pembeli.idPembeli;
 
-        // Then get transaction history
         await _loadHistoriTransaksi();
       } else {
         setState(() {
@@ -94,10 +92,8 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
     if (_currentPembeliId == null) return;
 
     try {
-      // Fetch all transactions
       List<Transaksi> allTransaksi = await _transaksiService.getAllTransaksi();
 
-      // Filter transactions where id_pembeli matches the current user
       _historiTransaksi = allTransaksi.where((transaksi) {
         return transaksi.subPembelian?.pembelian?.idPembeli == _currentPembeliId;
       }).toList();
@@ -238,7 +234,6 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
       ),
       child: Column(
         children: [
-          // Header with status
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -277,24 +272,21 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                   'ID: ${transaksi.idTransaksi}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: Colors.grey[800], // Darkened from AppColors.textSecondary
                   ),
                 ),
               ],
             ),
           ),
           
-          // Content
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Item info
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Image placeholder
                     Container(
                       width: 60,
                       height: 60,
@@ -302,7 +294,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                         color: AppColors.background,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: AppColors.textSecondary.withOpacity(0.2),
+                          color: Colors.grey[400]!, // Slightly darker border
                         ),
                       ),
                       child: barang.gambar != null && barang.gambar!.isNotEmpty
@@ -314,7 +306,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Icon(
                                     Icons.image_not_supported,
-                                    color: AppColors.textSecondary,
+                                    color: Colors.grey[600], // Darkened
                                     size: 24,
                                   );
                                 },
@@ -322,7 +314,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                             )
                           : Icon(
                               Icons.shopping_bag,
-                              color: AppColors.textSecondary,
+                              color: Colors.grey[600], // Darkened
                               size: 24,
                             ),
                     ),
@@ -333,10 +325,10 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                         children: [
                           Text(
                             barang.nama,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: Colors.grey[900], // Darkened from AppColors.textPrimary
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -355,7 +347,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                             'Kategori: ${barang.kategoriBarang}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: Colors.grey[800], // Darkened from AppColors.textSecondary
                             ),
                           ),
                         ],
@@ -366,7 +358,6 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                 
                 const SizedBox(height: 16),
                 
-                // Dates info
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -394,7 +385,6 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                 
                 const SizedBox(height: 16),
                 
-                // Price details
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -415,7 +405,6 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                   ),
                 ),
                 
-                // Points earned
                 if (pembelian.poinDiperoleh > 0) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -433,7 +422,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                         Icon(
                           Icons.stars,
                           size: 14,
-                          color: Colors.amber[700],
+                          color: Colors.amber[800], // Slightly darker
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -441,7 +430,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Colors.amber[700],
+                            color: Colors.amber[800], // Slightly darker
                           ),
                         ),
                       ],
@@ -449,7 +438,6 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                   ),
                 ],
                 
-                // Shipping address
                 if (pembelian.alamat?.alamatLengkap != null) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -467,7 +455,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                         Icon(
                           Icons.location_on,
                           size: 14,
-                          color: Colors.blue[700],
+                          color: Colors.blue[800], // Slightly darker
                         ),
                         const SizedBox(width: 6),
                         Expanded(
@@ -475,7 +463,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                             'Alamat: ${pembelian.alamat!.alamatLengkap}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.blue[700],
+                              color: Colors.blue[800], // Slightly darker
                             ),
                           ),
                         ),
@@ -497,23 +485,23 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
         Icon(
           icon,
           size: 14,
-          color: AppColors.textSecondary,
+          color: Colors.grey[800], // Darkened from AppColors.textSecondary
         ),
         const SizedBox(width: 6),
         Text(
           '$label:',
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.textSecondary,
+            color: Colors.grey[800], // Darkened from AppColors.textSecondary
           ),
         ),
         const Spacer(),
         Text(
           date,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textPrimary,
+            color: Colors.grey[900], // Darkened from AppColors.textPrimary
           ),
         ),
       ],
@@ -529,7 +517,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
           style: TextStyle(
             fontSize: isBold ? 14 : 12,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
-            color: isBold ? AppColors.textPrimary : AppColors.textSecondary,
+            color: isBold ? Colors.grey[900] : Colors.grey[800], // Darkened
           ),
         ),
         Text(
@@ -537,7 +525,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
           style: TextStyle(
             fontSize: isBold ? 14 : 12,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.w500,
-            color: isDiscount ? Colors.green : (isBold ? AppColors.textPrimary : AppColors.textSecondary),
+            color: isDiscount ? Colors.green : (isBold ? Colors.grey[900] : Colors.grey[800]), // Darkened
           ),
         ),
       ],
@@ -654,11 +642,8 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                 )
               : Column(
                   children: [
-                    // Filter chips
                     _buildFilterChips(),
                     const SizedBox(height: 8),
-                    
-                    // Results count
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
@@ -673,10 +658,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                         ],
                       ),
                     ),
-                    
                     const SizedBox(height: 8),
-                    
-                    // List
                     Expanded(
                       child: _filteredTransaksi.isEmpty
                           ? _buildEmptyState()
