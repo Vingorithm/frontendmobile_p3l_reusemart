@@ -320,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                             ),
                             Text(
-                              'Kualitas Terbaik, QC Terbaik',
+                              'Kualitas Terbaik, QC Terjamin',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall!

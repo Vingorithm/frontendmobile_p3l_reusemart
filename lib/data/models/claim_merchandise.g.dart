@@ -17,6 +17,9 @@ ClaimMerchandise _$ClaimMerchandiseFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['tanggal_ambil'] as String),
       statusClaimMerchandise: json['status_claim_merchandise'] as String,
+      merchandise: json['Merchandise'] == null
+          ? null
+          : Merchandise.fromJson(json['Merchandise'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ClaimMerchandiseToJson(ClaimMerchandise instance) =>
@@ -28,4 +31,5 @@ Map<String, dynamic> _$ClaimMerchandiseToJson(ClaimMerchandise instance) =>
       'tanggal_claim': instance.tanggalClaim.toIso8601String(),
       'tanggal_ambil': instance.tanggalAmbil?.toIso8601String(),
       'status_claim_merchandise': instance.statusClaimMerchandise,
+      'Merchandise': instance.merchandise,
     };

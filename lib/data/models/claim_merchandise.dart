@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'merchandise.dart';
 
 part 'claim_merchandise.g.dart';
 
@@ -18,6 +19,8 @@ class ClaimMerchandise {
   final DateTime? tanggalAmbil;
   @JsonKey(name: 'status_claim_merchandise')
   final String statusClaimMerchandise;
+  @JsonKey(name: 'Merchandise')
+  final Merchandise? merchandise;
 
   ClaimMerchandise({
     required this.idClaimMerchandise,
@@ -27,6 +30,7 @@ class ClaimMerchandise {
     required this.tanggalClaim,
     this.tanggalAmbil,
     required this.statusClaimMerchandise,
+    this.merchandise,
   });
 
   factory ClaimMerchandise.fromJson(Map<String, dynamic> json) => _$ClaimMerchandiseFromJson(json);
