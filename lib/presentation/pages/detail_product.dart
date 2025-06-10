@@ -7,6 +7,7 @@ import '../../data/models/barang.dart';
 import '../../data/services/diskusi_produk_service.dart';
 import '../../data/models/diskusi_produk.dart';
 import '../../data/models/penitip.dart';
+import 'package:intl/intl.dart';
 
 class DetailProductPage extends StatefulWidget {
   final String idBarang;
@@ -138,7 +139,70 @@ class _DetailProductPageState extends State<DetailProductPage> {
                             height: 1.5,
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            const Text(
+                              'Garansi Berlaku: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: barang.garansiBerlaku
+                                    ? Colors.green
+                                    : Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                barang.garansiBerlaku ? 'Ya' : 'Tidak',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            const Text(
+                              'Tanggal Garansi: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              barang.garansiBerlaku &&
+                                      barang.tanggalGaransi != null
+                                  ? DateFormat('dd-MM-yyyy')
+                                      .format(barang.tanggalGaransi as DateTime)
+                                  : '-',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.normal),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Text(
+                              'Berat: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text('${barang.berat} kg'),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Text(
+                              'Kategori Barang: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(barang.kategoriBarang),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
                         _buildDiskusiSection(),
                         const SizedBox(height: 20),
                         if (barang.idPenitip != null) _buildPenitipSection(),
