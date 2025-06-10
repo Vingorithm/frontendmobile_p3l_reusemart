@@ -9,6 +9,7 @@ import '../../data/models/barang.dart';
 import '../../presentation/widgets/product_card.dart';
 import '../../presentation/widgets/category_card.dart';
 import '../../presentation/widgets/search_bar.dart';
+import '../pages/detail_product.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _contentAnimationController;
   late Animation<double> _headerFadeAnimation;
   late Animation<Offset> _headerSlideAnimation;
-  
+
   // Carousel controller dan timer
   late PageController _carouselController;
   late Timer _carouselTimer;
@@ -36,25 +37,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     {
       'title': 'Flash Sale 70%',
       'subtitle': 'Elektronik Berkualitas',
-      'image': 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+      'image':
+          'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
       'gradient': [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
     },
     {
       'title': 'Koleksi Terbaru',
       'subtitle': 'Fashion & Aksesoris',
-      'image': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600',
+      'image':
+          'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600',
       'gradient': [Color(0xFF667eea), Color(0xFF764ba2)],
     },
     {
       'title': 'Eco Friendly',
       'subtitle': 'Produk Ramah Lingkungan',
-      'image': 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600',
+      'image':
+          'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600',
       'gradient': [Color(0xFF11998e), Color(0xFF38ef7d)],
     },
     {
       'title': 'Gratis Ongkir',
       'subtitle': 'Minimum Pembelian 100K',
-      'image': 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600',
+      'image':
+          'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600',
       'gradient': [Color(0xFFf093fb), Color(0xFFf5576c)],
     },
   ];
@@ -63,11 +68,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _futureBarang = _apiService.getAllBarang();
-    
+
     // Initialize carousel
     _carouselController = PageController();
     _startCarouselTimer();
-    
+
     // Initialize animations
     _headerAnimationController = AnimationController(
       vsync: this,
@@ -77,15 +82,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    
+
     _headerFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _headerAnimationController, curve: Curves.easeOut),
+      CurvedAnimation(
+          parent: _headerAnimationController, curve: Curves.easeOut),
     );
     _headerSlideAnimation = Tween<Offset>(
       begin: const Offset(0, -0.5),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _headerAnimationController, curve: Curves.easeOut));
-    
+    ).animate(CurvedAnimation(
+        parent: _headerAnimationController, curve: Curves.easeOut));
+
     // Start animations
     _headerAnimationController.forward();
     _contentAnimationController.forward();
@@ -174,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             // Enhanced Header with gradient and brand
             _buildEnhancedHeader(),
-            
+
             // Search Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -190,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            
+
             // Main Content
             Expanded(
               child: RefreshIndicator(
@@ -211,7 +218,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       return _buildEmptyState();
                     }
 
-                    final barangList = _filterBarang(snapshot.data!, _searchQuery);
+                    final barangList =
+                        _filterBarang(snapshot.data!, _searchQuery);
                     final categories = _getCategories(barangList);
 
                     return SingleChildScrollView(
@@ -220,13 +228,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         children: [
                           // Promotional Carousel
                           _buildPromotionalCarousel(),
-                          
+
                           // Quick Stats
                           _buildQuickStats(barangList),
-                          
+
                           // Categories Horizontal List Section
-                          _buildCategoryHorizontalList(context, categories, barangList),
-                          
+                          _buildCategoryHorizontalList(
+                              context, categories, barangList),
+
                           // Popular Products Section
                           _buildProductSection(context, barangList),
                         ],
@@ -300,19 +309,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           children: [
                             Text(
                               'ReuseMart',
-                              style: Theme.of(context).textTheme.displayMedium!.copyWith(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 24,
-                                letterSpacing: 1.2,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displayMedium!
+                                  .copyWith(
+                                    color: AppColors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                    letterSpacing: 1.2,
+                                  ),
                             ),
                             Text(
                               'Kualitas Terbaik, QC Terbaik',
-                              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                                color: AppColors.white.withOpacity(0.8),
-                                fontSize: 12,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
+                                    color: AppColors.white.withOpacity(0.8),
+                                    fontSize: 12,
+                                  ),
                             ),
                           ],
                         ),
@@ -370,16 +385,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Text(
                   'Selamat Datang! 👋',
                   style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Temukan produk bekas berkualitas dengan harga terbaik',
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    color: AppColors.white.withOpacity(0.9),
-                  ),
+                        color: AppColors.white.withOpacity(0.9),
+                      ),
                 ),
               ],
             ),
@@ -639,7 +654,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCategoryHorizontalList(BuildContext context, List<Map<String, dynamic>> categories, List<Barang> barangList) {
+  Widget _buildCategoryHorizontalList(BuildContext context,
+      List<Map<String, dynamic>> categories, List<Barang> barangList) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -670,17 +686,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Text(
                     'Kategori',
                     style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   Text(
                     'Pilih kategori favorit Anda',
                     style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                    ),
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
                   ),
                 ],
               ),
@@ -746,8 +762,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              category['name'].length > 12 
-                                  ? '${category['name'].substring(0, 10)}...' 
+                              category['name'].length > 12
+                                  ? '${category['name'].substring(0, 10)}...'
                                   : category['name'],
                               style: TextStyle(
                                 fontSize: 10,
@@ -782,8 +798,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildProductSection(BuildContext context, List<Barang> barangList) {
     // Increased product count from 6 to 12
-    final displayedProductCount = barangList.length > 16 ? 16 : barangList.length;
-    
+    final displayedProductCount =
+        barangList.length > 16 ? 16 : barangList.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -816,18 +833,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     children: [
                       Text(
                         'Produk Terpopuler',
-                        style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                          color: AppColors.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall!.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       Text(
                         'Pilihan favorit pelanggan',
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
                       ),
                     ],
                   ),
@@ -873,7 +891,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 hasWarranty: barang.garansiBerlaku,
                 count: _getProductCount(barangList, barang.kategoriBarang),
                 onTap: () {
-                  debugPrint('Product tapped: ${barang.nama}');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailProductPage(idBarang: barang.idBarang),
+                    ),
+                  );
                 },
               ),
             );
@@ -903,8 +926,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Text(
             'Memuat produk terbaik untuk Anda...',
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
           ),
         ],
       ),
@@ -934,16 +957,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Text(
               'Oops! Terjadi Kesalahan',
               style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                color: AppColors.textPrimary,
-                fontSize: 20,
-              ),
+                    color: AppColors.textPrimary,
+                    fontSize: 20,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Gagal memuat produk. Silakan coba lagi.',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                color: AppColors.textSecondary,
-              ),
+                    color: AppColors.textSecondary,
+                  ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -957,7 +980,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -992,16 +1016,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Text(
               'Belum Ada Produk',
               style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                color: AppColors.textPrimary,
-                fontSize: 20,
-              ),
+                    color: AppColors.textPrimary,
+                    fontSize: 20,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Produk sedang dalam proses penambahan.\nSilakan cek kembali nanti.',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                color: AppColors.textSecondary,
-              ),
+                    color: AppColors.textSecondary,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -1030,7 +1054,8 @@ class FadeInAnimation extends StatefulWidget {
   State<FadeInAnimation> createState() => _FadeInAnimationState();
 }
 
-class _FadeInAnimationState extends State<FadeInAnimation> with SingleTickerProviderStateMixin {
+class _FadeInAnimationState extends State<FadeInAnimation>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
