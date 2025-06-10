@@ -131,7 +131,7 @@ class _RootScreenState extends State<RootScreen> {
       case "Hunter":
         return [
           const HomeScreen(),
-          const HistoriKomisiPage(),
+          const HistoryKomisiDetailPage(),
           const ProfileScreen(),
         ];
       case "Guest":

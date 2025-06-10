@@ -10,6 +10,7 @@ import '../../data/models/pegawai.dart';
 import '../../data/services/penitip_service.dart';
 import '../../data/services/pembeli_service.dart';
 import '../../data/services/pegawai_service.dart';
+import '../../data/services/transaksi_service.dart';
 import 'about_page.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -74,7 +75,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await _loadPembeliData();
       }
       // Jika role adalah kurir atau hunter, load data pegawai
-      else if (_userRole.toLowerCase() == 'kurir' || _userRole.toLowerCase() == 'hunter') {
+      else if (_userRole.toLowerCase() == 'kurir' ||
+          _userRole.toLowerCase() == 'hunter') {
         await _loadPegawaiData();
       }
     } else {
@@ -352,9 +354,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ? _penitipData!.namaPenitip[0].toUpperCase()
                                   : _pembeliData?.nama.isNotEmpty == true
                                       ? _pembeliData!.nama[0].toUpperCase()
-                                      : _pegawaiData?.namaPegawai.isNotEmpty == true
-                                      ? _pegawaiData!.namaPegawai[0].toUpperCase()
-                                      : _email[0].toUpperCase())
+                                      : _pegawaiData?.namaPegawai.isNotEmpty ==
+                                              true
+                                          ? _pegawaiData!.namaPegawai[0]
+                                              .toUpperCase()
+                                          : _email[0].toUpperCase())
                               : '?',
                           style: TextStyle(
                             fontSize: 36,
@@ -368,7 +372,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // Name or Email
                     Text(
-                      _penitipData?.namaPenitip ?? _pembeliData?.nama ?? _pegawaiData?.namaPegawai ?? _email,
+                      _penitipData?.namaPenitip ??
+                          _pembeliData?.nama ??
+                          _pegawaiData?.namaPegawai ??
+                          _email,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -379,7 +386,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // Email (jika ada nama penitip atau pembeli)
                     if (_penitipData?.namaPenitip != null ||
-                        _pembeliData?.nama != null || _pegawaiData?.namaPegawai != null) ...[
+                        _pembeliData?.nama != null ||
+                        _pegawaiData?.namaPegawai != null) ...[
                       const SizedBox(height: 4),
                       Text(
                         _email,
@@ -464,6 +472,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Pembeli Statistics Card (hanya untuk role pembeli)
             if (_userRole.toLowerCase() == 'pembeli') ...[
               _buildPembeliStatsCard(),
+              const SizedBox(height: 24),
+            ],
+
+            // Hunter Commission Card (hanya untuk role hunter) - TAMBAH INI
+            if (_userRole.toLowerCase() == 'hunter') ...[
+              _buildHunterCommissionCard(),
               const SizedBox(height: 24),
             ],
 
@@ -1026,6 +1040,185 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHunterCommissionCard() {
+    return FutureBuilder<Pegawai>(
+      future: PegawaiService()
+          .getPegawaiByIdAkun(_userId), // Ambil data pegawai dulu
+      builder: (context, pegawaiSnapshot) {
+        if (pegawaiSnapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (pegawaiSnapshot.hasError || !pegawaiSnapshot.hasData) {
+          return Container(
+            height: 200,
+            child: Center(child: Text('Error loading pegawai data')),
+          );
+        }
+
+        final pegawai = pegawaiSnapshot.data!;
+        final idPegawai =
+            pegawai.idPegawai; // Atau sesuai nama property di model Pegawai
+
+        print('🔍 Hunter ID (id_pegawai): $idPegawai');
+
+        // Sekarang fetch komisi dengan id_pegawai
+        return FutureBuilder<Map<String, dynamic>>(
+          future: TransaksiService().getHunterKomisiSummary(idPegawai),
+          builder: (context, komisiSnapshot) {
+            print('🔍 Hunter komisi response: ${komisiSnapshot.data}');
+
+            if (komisiSnapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            double totalKomisi = 0.0;
+            int jumlahTransaksi = 0;
+
+            if (komisiSnapshot.hasData && komisiSnapshot.data != null) {
+              final data = komisiSnapshot.data!;
+              totalKomisi = double.tryParse(
+                      data['total_komisi_hunter']?.toString() ?? '0') ??
+                  0.0;
+              jumlahTransaksi =
+                  int.tryParse(data['jumlah_transaksi']?.toString() ?? '0') ??
+                      0;
+            }
+
+            // Rest of your UI code...
+            return Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    spreadRadius: 1,
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Header section...
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.attach_money_outlined,
+                            color: Colors.orange,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Komisi Hunter',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Content section...
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.account_balance_wallet,
+                                      color: Colors.green, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Total Komisi',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Rp ${totalKomisi.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Dari $jumlahTransaksi transaksi',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // History button section...
+
+                        const SizedBox(height: 16), // Tambahkan ini
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
