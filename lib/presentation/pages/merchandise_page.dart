@@ -5,6 +5,7 @@ import '../../data/services/merchandise_service.dart';
 import '../../core/theme/color_pallete.dart';
 import '../widgets/merchandise_card.dart';
 import '../widgets/search_bar.dart';
+import 'claim_merch_page.dart';
 
 class MerchandiseScreen extends StatefulWidget {
   const MerchandiseScreen({super.key});
@@ -129,6 +130,23 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ClaimScreen(),
+                ),
+              );
+            },
+            icon: const Icon(
+              Icons.history,
+              color: AppColors.primary,
+            ),
+            tooltip: 'Claim History',
+          ),
+        ],
       ),
       body: Column(
         children: [

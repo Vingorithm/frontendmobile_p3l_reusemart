@@ -338,7 +338,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // Logo utama
                   Container(
                     width: 330, // Disesuaikan dengan rasio 426:105
-                    height: 135,  // Maintain aspect ratio
+                    height: 150,  // Maintain aspect ratio
                     child: Image.asset(
                       'assets/images/logo.png',
                       fit: BoxFit.contain,
