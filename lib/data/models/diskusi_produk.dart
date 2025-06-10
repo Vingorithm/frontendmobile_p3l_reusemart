@@ -30,6 +30,7 @@ class DiskusiProduk {
     this.tanggalJawaban,
   });
 
-  factory DiskusiProduk.fromJson(Map<String, dynamic> json) => _$DiskusiProdukFromJson(json);
+  factory DiskusiProduk.fromJson(Map<String, dynamic> json) =>
+      _$DiskusiProdukFromJson(json);
   Map<String, dynamic> toJson() => _$DiskusiProdukToJson(this);
 }

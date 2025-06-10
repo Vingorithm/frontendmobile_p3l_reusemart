@@ -25,7 +25,8 @@ class ProductCard extends StatefulWidget {
   State<ProductCard> createState() => _ProductCardState();
 }
 
-class _ProductCardState extends State<ProductCard> with SingleTickerProviderStateMixin {
+class _ProductCardState extends State<ProductCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -111,7 +112,9 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                               topRight: Radius.circular(16),
                             ),
                           ),
-                          child: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                          child: const Center(
+                              child: CircularProgressIndicator(
+                                  color: AppColors.primary)),
                         ),
                         errorWidget: (context, url, error) => Container(
                           width: double.infinity,
@@ -137,14 +140,18 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                         top: 8,
                         right: 8,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             'Garansi',
-                            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium!
+                                .copyWith(
                                   color: AppColors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
