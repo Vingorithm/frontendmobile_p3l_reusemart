@@ -19,9 +19,9 @@ Penitip _$PenitipFromJson(Map<String, dynamic> json) => Penitip(
       tanggalRegistrasi: json['tanggal_registrasi'] == null
           ? null
           : DateTime.parse(json['tanggal_registrasi'] as String),
-      akun: json['akun'] == null
+      akun: json['Akun'] == null
           ? null
-          : Akun.fromJson(json['akun'] as Map<String, dynamic>),
+          : Akun.fromJson(json['Akun'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$PenitipToJson(Penitip instance) => <String, dynamic>{

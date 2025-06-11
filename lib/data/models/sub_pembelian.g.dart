@@ -16,6 +16,9 @@ SubPembelian _$SubPembelianFromJson(Map<String, dynamic> json) => SubPembelian(
       barang: json['Barang'] == null
           ? null
           : Barang.fromJson(json['Barang'] as Map<String, dynamic>),
+      transaksi: json['Transaksi'] == null
+          ? null
+          : Transaksi.fromJson(json['Transaksi'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$SubPembelianToJson(SubPembelian instance) =>

@@ -20,6 +20,7 @@ class Pembeli {
   @JsonKey(name: 'tanggal_registrasi')
   final DateTime tanggalRegistrasi;
 
+  @JsonKey(name: 'Akun')
   final Akun? akun;
 
   Pembeli({

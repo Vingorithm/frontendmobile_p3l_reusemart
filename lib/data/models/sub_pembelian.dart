@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'pembelian.dart';
 import 'barang.dart';
+import 'transaksi.dart';
 
 part 'sub_pembelian.g.dart';
 
@@ -16,6 +17,8 @@ class SubPembelian {
   final Pembelian? pembelian;
   @JsonKey(name: 'Barang')
   final Barang? barang;
+  @JsonKey(name: 'Transaksi')
+  final Transaksi? transaksi;
 
   SubPembelian({
     required this.idSubPembelian,
@@ -23,8 +26,10 @@ class SubPembelian {
     required this.idBarang,
     this.pembelian,
     this.barang,
+    this.transaksi
   });
 
-  factory SubPembelian.fromJson(Map<String, dynamic> json) => _$SubPembelianFromJson(json);
+  factory SubPembelian.fromJson(Map<String, dynamic> json) =>
+      _$SubPembelianFromJson(json);
   Map<String, dynamic> toJson() => _$SubPembelianToJson(this);
 }

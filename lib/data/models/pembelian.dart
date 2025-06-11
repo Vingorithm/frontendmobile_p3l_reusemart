@@ -3,6 +3,7 @@ import 'pegawai.dart';
 import 'pembeli.dart';
 import 'alamat_pembeli.dart';
 import 'pengiriman.dart';
+import 'sub_pembelian.dart';
 
 part 'pembelian.g.dart';
 
@@ -36,10 +37,14 @@ class Pembelian {
   final String statusPembelian;
   @JsonKey(name: 'CustomerService')
   final Pegawai? customerService;
+  @JsonKey(name: 'Pembeli')
   final Pembeli? pembeli;
-  @JsonKey(name: 'Alamat')
+  @JsonKey(name: 'AlamatPembeli')
   final AlamatPembeli? alamat;
+  @JsonKey(name: 'Pengiriman')
   final Pengiriman? pengiriman;
+  @JsonKey(name: 'SubPembelians')
+  final List<SubPembelian>? subPembelians;
 
   Pembelian({
     required this.idPembelian,
@@ -59,6 +64,7 @@ class Pembelian {
     this.pembeli,
     this.alamat,
     this.pengiriman,
+    this.subPembelians
   });
 
   factory Pembelian.fromJson(Map<String, dynamic> json) {
