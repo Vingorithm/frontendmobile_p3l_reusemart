@@ -6,6 +6,7 @@ import '../../core/theme/color_pallete.dart';
 import '../widgets/merchandise_card.dart';
 import '../widgets/search_bar.dart';
 import 'claim_merch_page.dart';
+import 'detail_merch.dart';
 
 class MerchandiseScreen extends StatefulWidget {
   const MerchandiseScreen({super.key});
@@ -271,8 +272,13 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
         return MerchandiseCard(
           merchandise: merchandise,
           onTap: () {
-            debugPrint('Merchandise tapped: ${merchandise.namaMerchandise}');
-            // Navigate to detail page
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    DetailMerchPage(idMerchandise: merchandise.idMerchandise),
+              ),
+            );
           },
         );
       },
