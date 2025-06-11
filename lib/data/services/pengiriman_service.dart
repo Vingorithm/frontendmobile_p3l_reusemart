@@ -35,4 +35,24 @@ class PengirimanService extends BaseApiService {
       rethrow;
     }
   }
+
+  Future<Pengiriman> updatePengiriman(String? id, Map<String, dynamic> data) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${BaseApiService.baseUrl}/pengiriman/$id'), 
+        headers: headers, 
+        body: jsonEncode(data)
+      );
+      if (response.statusCode == 200) {
+        return Pengiriman.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 404) {
+        throw Exception('Pengiriman not found');
+      } else {
+        throw Exception('Failed to update pengiriman: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating pengiriman by id: $e');
+      rethrow;
+    }
+  }
 }
