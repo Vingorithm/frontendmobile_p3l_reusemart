@@ -32,6 +32,7 @@ class Pembeli {
     this.akun,
   });
 
-  factory Pembeli.fromJson(Map<String, dynamic> json) => _$PembeliFromJson(json);
+  factory Pembeli.fromJson(Map<String, dynamic> json) =>
+      _$PembeliFromJson(json);
   Map<String, dynamic> toJson() => _$PembeliToJson(this);
 }

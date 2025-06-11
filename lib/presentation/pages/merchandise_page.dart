@@ -23,11 +23,12 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
   @override
   void initState() {
     super.initState();
-    _futureMerchandise = _apiService.getAllMerchandise();
+    _futureMerchandise = _apiService.getAllMobileMerchandise();
   }
 
   // Filter merchandise based on search query and hargaPoin
-  List<Merchandise> _filterMerchandise(List<Merchandise> merchandise, String query, String filter) {
+  List<Merchandise> _filterMerchandise(
+      List<Merchandise> merchandise, String query, String filter) {
     List<Merchandise> filteredList = merchandise;
 
     // Apply search query filter
@@ -43,13 +44,17 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
     // Apply hargaPoin filter
     switch (filter) {
       case 'Below 100':
-        filteredList = filteredList.where((item) => item.hargaPoin < 100).toList();
+        filteredList =
+            filteredList.where((item) => item.hargaPoin < 100).toList();
         break;
       case '100-500':
-        filteredList = filteredList.where((item) => item.hargaPoin >= 100 && item.hargaPoin <= 500).toList();
+        filteredList = filteredList
+            .where((item) => item.hargaPoin >= 100 && item.hargaPoin <= 500)
+            .toList();
         break;
       case 'Above 500':
-        filteredList = filteredList.where((item) => item.hargaPoin > 500).toList();
+        filteredList =
+            filteredList.where((item) => item.hargaPoin > 500).toList();
         break;
       case 'All':
       default:
@@ -99,8 +104,11 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
       title: Text(
         label,
         style: TextStyle(
-          color: _selectedFilter == value ? AppColors.primary : AppColors.textPrimary,
-          fontWeight: _selectedFilter == value ? FontWeight.bold : FontWeight.normal,
+          color: _selectedFilter == value
+              ? AppColors.primary
+              : AppColors.textPrimary,
+          fontWeight:
+              _selectedFilter == value ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       trailing: _selectedFilter == value
@@ -215,7 +223,7 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
             child: RefreshIndicator(
               onRefresh: () async {
                 setState(() {
-                  _futureMerchandise = _apiService.getAllMerchandise();
+                  _futureMerchandise = _apiService.getAllMobileMerchandise();
                 });
               },
               color: AppColors.primary,
@@ -230,9 +238,11 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
                     return _buildEmptyState();
                   }
 
-                  final merchandiseList = _filterMerchandise(snapshot.data!, _searchQuery, _selectedFilter);
+                  final merchandiseList = _filterMerchandise(
+                      snapshot.data!, _searchQuery, _selectedFilter);
 
-                  if (merchandiseList.isEmpty && (_searchQuery.isNotEmpty || _selectedFilter != 'All')) {
+                  if (merchandiseList.isEmpty &&
+                      (_searchQuery.isNotEmpty || _selectedFilter != 'All')) {
                     return _buildSearchEmptyState();
                   }
 
@@ -285,16 +295,16 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
             Text(
               'Merchandise Tidak Ditemukan',
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Coba gunakan kata kunci lain atau filter lain',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                color: AppColors.textSecondary,
-              ),
+                    color: AppColors.textSecondary,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -308,7 +318,8 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -333,8 +344,8 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
           Text(
             'Memuat merchandise...',
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
           ),
         ],
       ),
@@ -357,22 +368,22 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
             Text(
               'Terjadi Kesalahan',
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Gagal memuat merchandise',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                color: AppColors.textSecondary,
-              ),
+                    color: AppColors.textSecondary,
+                  ),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
                 setState(() {
-                  _futureMerchandise = _apiService.getAllMerchandise();
+                  _futureMerchandise = _apiService.getAllMobileMerchandise();
                 });
               },
               icon: const Icon(Icons.refresh),
@@ -380,7 +391,8 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -408,16 +420,16 @@ class _MerchandiseScreenState extends State<MerchandiseScreen> {
             Text(
               'Belum Ada Merchandise',
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Merchandise akan segera tersedia',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                color: AppColors.textSecondary,
-              ),
+                    color: AppColors.textSecondary,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
