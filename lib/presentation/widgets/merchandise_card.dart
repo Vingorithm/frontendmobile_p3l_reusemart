@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../data/models/merchandise.dart';
 import '../../core/theme/color_pallete.dart';
@@ -76,7 +75,8 @@ class MerchandiseCard extends StatelessWidget {
                               child: CircularProgressIndicator(
                                 color: AppColors.primary,
                                 strokeWidth: 2,
-                                value: loadingProgress.expectedTotalBytes != null
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
                                     ? loadingProgress.cumulativeBytesLoaded /
                                         loadingProgress.expectedTotalBytes!
                                     : null,
@@ -92,7 +92,8 @@ class MerchandiseCard extends StatelessWidget {
                     top: 8,
                     right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: merchandise.stokMerchandise > 0
                             ? Colors.green.withOpacity(0.9)
@@ -100,7 +101,9 @@ class MerchandiseCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        merchandise.stokMerchandise > 0 ? 'In Stock' : 'Out of Stock',
+                        merchandise.stokMerchandise > 0
+                            ? 'In Stock'
+                            : 'Out of Stock',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -133,7 +136,7 @@ class MerchandiseCard extends StatelessWidget {
             ),
             // Content Section
             Expanded(
-              flex: 2,
+              flex: 3,
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
@@ -143,10 +146,10 @@ class MerchandiseCard extends StatelessWidget {
                     Text(
                       merchandise.namaMerchandise,
                       style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -156,11 +159,11 @@ class MerchandiseCard extends StatelessWidget {
                       child: Text(
                         merchandise.deskripsi,
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                              height: 1.3,
+                            ),
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
