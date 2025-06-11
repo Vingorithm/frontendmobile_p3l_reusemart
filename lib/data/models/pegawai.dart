@@ -18,6 +18,7 @@ class Pegawai {
   @JsonKey(name: 'tanggal_lahir')
   final DateTime tanggalLahir;
 
+  @JsonKey(name: 'Akun')
   final Akun? akun;
 
   Pegawai({

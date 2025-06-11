@@ -12,9 +12,9 @@ Pembeli _$PembeliFromJson(Map<String, dynamic> json) => Pembeli(
       nama: json['nama'] as String,
       totalPoin: (json['total_poin'] as num).toInt(),
       tanggalRegistrasi: DateTime.parse(json['tanggal_registrasi'] as String),
-      akun: json['akun'] == null
+      akun: json['Akun'] == null
           ? null
-          : Akun.fromJson(json['akun'] as Map<String, dynamic>),
+          : Akun.fromJson(json['Akun'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$PembeliToJson(Pembeli instance) => <String, dynamic>{

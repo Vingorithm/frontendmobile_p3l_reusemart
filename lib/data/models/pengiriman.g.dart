@@ -18,6 +18,9 @@ Pengiriman _$PengirimanFromJson(Map<String, dynamic> json) => Pengiriman(
           : DateTime.parse(json['tanggal_berakhir'] as String),
       statusPengiriman: json['status_pengiriman'] as String,
       jenisPengiriman: json['jenis_pengiriman'] as String,
+      pegawai: json['Pegawai'] == null
+          ? null
+          : Pegawai.fromJson(json['Pegawai'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$PengirimanToJson(Pengiriman instance) =>

@@ -25,15 +25,20 @@ Pembelian _$PembelianFromJson(Map<String, dynamic> json) => Pembelian(
       customerService: json['CustomerService'] == null
           ? null
           : Pegawai.fromJson(json['CustomerService'] as Map<String, dynamic>),
-      pembeli: json['pembeli'] == null
+      pembeli: json['Pembeli'] == null
           ? null
-          : Pembeli.fromJson(json['pembeli'] as Map<String, dynamic>),
-      alamat: json['Alamat'] == null
+          : Pembeli.fromJson(json['Pembeli'] as Map<String, dynamic>),
+      alamat: json['AlamatPembeli'] == null
           ? null
-          : AlamatPembeli.fromJson(json['Alamat'] as Map<String, dynamic>),
-      pengiriman: json['pengiriman'] == null
+          : AlamatPembeli.fromJson(json['AlamatPembeli'] as Map<String, dynamic>),
+      pengiriman: json['Pengiriman'] == null
           ? null
-          : Pengiriman.fromJson(json['pengiriman'] as Map<String, dynamic>),
+          : Pengiriman.fromJson(json['Pengiriman'] as Map<String, dynamic>),
+      subPembelians: json['SubPembelians'] == null
+        ? []
+        : (json['SubPembelians'] as List)
+            .map((item) => SubPembelian.fromJson(item as Map<String, dynamic>))
+            .toList(),
     );
 
 Map<String, dynamic> _$PembelianToJson(Pembelian instance) => <String, dynamic>{

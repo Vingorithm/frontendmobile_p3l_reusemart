@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'pegawai.dart';
 
 part 'pengiriman.g.dart';
 
@@ -18,6 +19,8 @@ class Pengiriman {
   final String statusPengiriman;
   @JsonKey(name: 'jenis_pengiriman')
   final String jenisPengiriman;
+  @JsonKey(name: 'Pegawai')
+  final Pegawai? pegawai;
 
   Pengiriman({
     required this.idPengiriman,
@@ -27,8 +30,10 @@ class Pengiriman {
     this.tanggalBerakhir,
     required this.statusPengiriman,
     required this.jenisPengiriman,
+    this.pegawai
   });
 
-  factory Pengiriman.fromJson(Map<String, dynamic> json) => _$PengirimanFromJson(json);
+  factory Pengiriman.fromJson(Map<String, dynamic> json) =>
+      _$PengirimanFromJson(json);
   Map<String, dynamic> toJson() => _$PengirimanToJson(this);
 }

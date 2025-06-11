@@ -29,6 +29,9 @@ Barang _$BarangFromJson(Map<String, dynamic> json) => Barang(
       pegawaiGudang: json['PegawaiGudang'] == null
           ? null
           : Pegawai.fromJson(json['PegawaiGudang'] as Map<String, dynamic>),
+      penitipan: json['Penitipan'] == null
+          ? null
+          : Penitipan.fromJson(json['Penitipan'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$BarangToJson(Barang instance) => <String, dynamic>{
