@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:frontendmobile_p3l_reusemart/core/theme/color_pallete.dart';
 import 'package:frontendmobile_p3l_reusemart/data/models/pegawai.dart';
 import 'package:frontendmobile_p3l_reusemart/data/models/pembelian.dart';
+import 'package:frontendmobile_p3l_reusemart/data/models/pengiriman.dart';
+import 'package:frontendmobile_p3l_reusemart/data/services/notificationServices.dart';
 import 'package:frontendmobile_p3l_reusemart/data/services/pegawai_service.dart';
 import 'package:frontendmobile_p3l_reusemart/data/services/pembelian_service.dart';
+import 'package:frontendmobile_p3l_reusemart/data/services/pengiriman_service.dart';
 import 'package:intl/intl.dart';
 import '../../utils/tokenUtils.dart';
 
@@ -27,6 +30,13 @@ class _HistoriTugasPageState extends State<HistoriTugasPage> {
   void initState() {
     super.initState();
     fetchData();
+  }
+
+  String formatCurrency(double? value) {
+    if (value == null) return "-";
+    final formatter =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    return formatter.format(value);
   }
 
   String formatDate(DateTime? date) {
@@ -134,6 +144,55 @@ class _HistoriTugasPageState extends State<HistoriTugasPage> {
     await fetchPembelianData();
   }
 
+  Future<void> handleSelesai(Pembelian pembelian) async {
+    try {
+      final pengirimanService = PengirimanService();
+      final notificationService = Notificationservices();
+      Pengiriman? pengiriman = pembelian.pengiriman;
+
+      if (pengiriman == null) throw Exception("Pengiriman tidak ditemukan.");
+
+      // Kirim update status dan tanggal saat ini
+      final responsePengiriman = await pengirimanService.updatePengiriman(
+        pengiriman.idPengiriman,
+        {
+          "status_pengiriman": "Selesai",
+          "tanggal_berakhir": DateTime.now().toIso8601String(),
+        },
+      );
+
+      print("FCM Token Pembeli: ${pembelian.pembeli?.akun?.fcmToken}");
+
+      final pembeliToken = pembelian.pembeli?.akun?.fcmToken;
+      if (pembeliToken != null && pembeliToken.isNotEmpty) {
+        await notificationService.sendPushNotification(
+          "Pesanan Sudah Sampai",
+          "Pesanan dengan id pembelian ${pembelian.idPembelian} sudah selesai dikirim!",
+          pembeliToken,
+        );
+      }
+
+      // Loop pakai for agar bisa pakai await
+      for (var item in pembelian.subPembelians ?? []) {
+        final penitipToken = item.barang?.penitip?.akun?.fcmToken;
+        print("FCM Token Penitip: $penitipToken");
+
+        if (penitipToken != null && penitipToken.isNotEmpty) {
+          await notificationService.sendPushNotification(
+            "Barang Selesai Dikirim",
+            "Barang dengan id ${item.barang?.idBarang} sudah selesai dikirim!",
+            penitipToken,
+          );
+        }
+      }
+
+      await fetchData();
+    } catch (e) {
+      print('Gagal menyelesaikan pengiriman: $e');
+    }
+  }
+
+
   List<Pembelian> get filteredPembelian {
     final data = isOngoing ? _ongoingList : _selesaiList;
 
@@ -151,18 +210,65 @@ class _HistoriTugasPageState extends State<HistoriTugasPage> {
     }).toList();
   }
 
-  Future<void> showCustomDialog(
+  Future<void> showDetailPengirimanDialog(
       BuildContext context, String title, String content) {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title, style: TextStyle(fontSize: 16, color: AppColors.black.withOpacity(0.8))
-        ),
-        content: Text(content, style: TextStyle(fontSize: 12, color: AppColors.black.withOpacity(0.8))),
+        title: Text(title,
+            style: TextStyle(
+                fontSize: 16,
+                color: AppColors.black.withOpacity(0.8),
+                fontWeight: FontWeight.bold)),
+        content: Text(content,
+            style: TextStyle(
+                fontSize: 14,
+                color: AppColors.black.withOpacity(1),
+                fontWeight: FontWeight.w400)),
         actions: [
-          ElevatedButton(
-            child: Text("Tutup", style: TextStyle(fontSize: 12, color: AppColors.black.withOpacity(0.8))),
+          TextButton(
+            child: Text("Tutup",
+                style: TextStyle(
+                    fontSize: 16, color: AppColors.black.withOpacity(0.8))),
             onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> showConfirmPengirimanDialog(
+      BuildContext context, String title, String content, Pembelian pembelian) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title,
+            style: TextStyle(
+                fontSize: 16,
+                color: AppColors.black.withOpacity(0.8),
+                fontWeight: FontWeight.bold)),
+        content: Text(content,
+            style: TextStyle(
+                fontSize: 14,
+                color: AppColors.black.withOpacity(1),
+                fontWeight: FontWeight.w400)),
+        actions: [
+          TextButton(
+            child: Text("Tutup",
+                style: TextStyle(
+                    fontSize: 16, color: AppColors.black.withOpacity(0.8))),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: Text("Selesai",
+                style: TextStyle(
+                    fontSize: 16, color: AppColors.black.withOpacity(0.8))),
+            onPressed: () {
+              handleSelesai(pembelian);
               Navigator.of(context).pop();
             },
           ),
@@ -312,6 +418,9 @@ class _HistoriTugasPageState extends State<HistoriTugasPage> {
           Text('Pembeli: ${data.pembeli?.nama}',
               style: TextStyle(
                   fontSize: 12, color: AppColors.black.withOpacity(0.8))),
+          Text('Status Pengiriman: ${data.pengiriman?.statusPengiriman}',
+              style: TextStyle(
+                  fontSize: 12, color: AppColors.black.withOpacity(0.8))),
           Text(
               'Tanggal Pengiriman: ${formatDate(data.pengiriman?.tanggalMulai)}',
               style: TextStyle(
@@ -328,7 +437,28 @@ class _HistoriTugasPageState extends State<HistoriTugasPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    showCustomDialog(context, "Detail Pengiriman", "");
+                    String message = """
+Pembelian:
+      Tanggal Pembelian: ${formatDate(data?.tanggalPembelian)}
+      Status Pembelian: ${data?.statusPembelian}
+      Customer Service: ${data?.customerService?.namaPegawai}
+
+Pembeli: 
+      Nama: ${data?.pembeli?.nama}
+      Alamat: ${data?.alamat?.alamatLengkap}
+      Email: ${data?.pembeli?.akun?.email}
+
+Pengiriman:
+      Kurir: ${data?.pengiriman?.pegawai?.namaPegawai}
+      Status Pengiriman: ${data?.pengiriman?.statusPengiriman}
+      Tanggal Pengiriman: ${formatDate(data?.pengiriman?.tanggalMulai)} ${data?.pengiriman?.statusPengiriman == "Selesai" ? "\n\t\t\t\t\t\tTanggal Selesai: ${formatDate(data?.pengiriman?.tanggalBerakhir)}" : ""}
+
+Barang:
+      Daftar Item: ${data?.subPembelians?.map((item) => item.barang?.nama).where((nama) => nama != null).join(', ') ?? '-'}
+      Total Bayar: ${formatCurrency(data?.totalBayar)}
+                    """;
+                    showDetailPengirimanDialog(
+                        context, "Detail Pengiriman", message);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00994C),
@@ -347,7 +477,13 @@ class _HistoriTugasPageState extends State<HistoriTugasPage> {
               if (isOngoing)
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      showConfirmPengirimanDialog(
+                          context,
+                          "Konfirmasi",
+                          "Apakah anda yakin ingin mengubah status pengiriman ${data?.pengiriman?.idPengiriman} menjadi 'Selesai' ?",
+                          data);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00994C),
                       padding: const EdgeInsets.symmetric(vertical: 10),
