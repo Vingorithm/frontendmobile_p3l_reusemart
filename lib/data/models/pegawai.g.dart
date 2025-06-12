@@ -21,5 +21,5 @@ Map<String, dynamic> _$PegawaiToJson(Pegawai instance) => <String, dynamic>{
       'id_akun': instance.idAkun,
       'nama_pegawai': instance.namaPegawai,
       'tanggal_lahir': instance.tanggalLahir.toIso8601String(),
-      'akun': instance.akun?.toJson(),
+      'Akun': instance.akun?.toJson(),
     };

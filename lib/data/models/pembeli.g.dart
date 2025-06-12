@@ -23,5 +23,5 @@ Map<String, dynamic> _$PembeliToJson(Pembeli instance) => <String, dynamic>{
       'nama': instance.nama,
       'total_poin': instance.totalPoin,
       'tanggal_registrasi': instance.tanggalRegistrasi.toIso8601String(),
-      'akun': instance.akun?.toJson(),
+      'Akun': instance.akun?.toJson(),
     };

@@ -51,4 +51,5 @@ Map<String, dynamic> _$BarangToJson(Barang instance) => <String, dynamic>{
       'Penitip': instance.penitip?.toJson(),
       'Hunter': instance.hunter?.toJson(),
       'PegawaiGudang': instance.pegawaiGudang?.toJson(),
+      'Penitipan': instance.penitipan?.toJson(),
     };

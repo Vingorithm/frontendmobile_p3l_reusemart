@@ -28,4 +28,5 @@ Map<String, dynamic> _$SubPembelianToJson(SubPembelian instance) =>
       'id_barang': instance.idBarang,
       'Pembelian': instance.pembelian?.toJson(),
       'Barang': instance.barang?.toJson(),
+      'Transaksi': instance.transaksi?.toJson(),
     };

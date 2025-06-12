@@ -35,5 +35,5 @@ Map<String, dynamic> _$PenitipToJson(Penitip instance) => <String, dynamic>{
       'badge': instance.badge,
       'total_poin': instance.totalPoin,
       'tanggal_registrasi': instance.tanggalRegistrasi?.toIso8601String(),
-      'akun': instance.akun?.toJson(),
+      'Akun': instance.akun?.toJson(),
     };

@@ -122,17 +122,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       // Cari pembeli berdasarkan id_akun
+      print("cek");
       final pembeliService = PembeliService();
-      final allPembeli = await pembeliService.getAllPembeli();
+      final allPembeli = await pembeliService.getPembeliByIdAkun(_userId);
 
-      // Cari pembeli yang id_akun nya sesuai dengan userId
-      final pembeliData = allPembeli.firstWhere(
-        (pembeli) => pembeli.idAkun == _userId,
-        orElse: () => throw Exception('Data pembeli tidak ditemukan'),
-      );
+      // // Cari pembeli yang id_akun nya sesuai dengan userId
+      // final pembeliData = allPembeli.firstWhere(
+      //   (pembeli) => pembeli.idAkun == _userId,
+      //   orElse: () => throw Exception('Data pembeli tidak ditemukan'),
+      // );
 
+      print(allPembeli);
       setState(() {
-        _pembeliData = pembeliData;
+        _pembeliData = allPembeli;
         _isLoadingPembeliData = false;
       });
     } catch (e) {

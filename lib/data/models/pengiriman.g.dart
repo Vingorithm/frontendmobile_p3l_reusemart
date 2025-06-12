@@ -32,4 +32,5 @@ Map<String, dynamic> _$PengirimanToJson(Pengiriman instance) =>
       'tanggal_berakhir': instance.tanggalBerakhir?.toIso8601String(),
       'status_pengiriman': instance.statusPengiriman,
       'jenis_pengiriman': instance.jenisPengiriman,
+      'Pegawai': instance.pegawai,
     };
