@@ -439,6 +439,7 @@ class _HistoriTugasPageState extends State<HistoriTugasPage> {
                   onPressed: () {
                     String message = """
 Pembelian:
+      ID Pembelian: ${data?.idPembelian}
       Tanggal Pembelian: ${formatDate(data?.tanggalPembelian)}
       Status Pembelian: ${data?.statusPembelian}
       Customer Service: ${data?.customerService?.namaPegawai}
