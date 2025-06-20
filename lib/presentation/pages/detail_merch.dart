@@ -100,7 +100,7 @@ class _DetailMerchPageState extends State<DetailMerchPage> {
         idPembeli: _pembeliData!.idPembeli,
         idCustomerService: 'P1',
         tanggalClaim: now,
-        statusClaimMerchandise: 'Pending',
+        statusClaimMerchandise: 'Diproses',
       );
 
       // Kurangi poin pembeli

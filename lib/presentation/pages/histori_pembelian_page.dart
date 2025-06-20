@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/color_pallete.dart';
-import '../../data/models/transaksi.dart';
-import '../../data/services/transaksi_service.dart';
+import '../../data/models/pembelian.dart';
+import '../../data/services/pembelian_service.dart';
 import '../../data/services/pembeli_service.dart';
 import '../../data/models/pembeli.dart';
 import '../../utils/tokenUtils.dart';
+import '../../data/api_service.dart';
 
 class HistoriPembelianPage extends StatefulWidget {
   const HistoriPembelianPage({super.key});
@@ -15,23 +16,21 @@ class HistoriPembelianPage extends StatefulWidget {
 }
 
 class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
-  final TransaksiService _transaksiService = TransaksiService();
+  final PembelianService _pembelianService = PembelianService();
   final PembeliService _pembeliService = PembeliService();
-  List<Transaksi> _historiTransaksi = [];
+  List<Pembelian> _historiPembelian = [];
   bool _isLoading = true;
   String? _errorMessage;
   String? _currentUserId;
   String? _currentPembeliId;
   String _selectedFilter = 'Semua';
-  
+
   final List<String> _filterOptions = [
     'Semua',
-    'Pending',
-    'Pembayaran Valid',
-    'Diproses',
-    'Dikirim',
-    'Selesai',
-    'Batal'
+    'Pembayaran valid',
+    'Pembayaran tidak valid',
+    'Menunggu verifikasi pembayaran',
+    'Tidak mengirimkan bukti pembayaran',
   ];
 
   @override
@@ -60,7 +59,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
       if (decoded != null) {
         _currentUserId = decoded['id']?.toString() ?? '';
         String userRole = decoded['role'] ?? '';
-        
+
         if (userRole.toLowerCase() != 'pembeli') {
           setState(() {
             _errorMessage = 'Halaman ini hanya untuk pembeli';
@@ -72,7 +71,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
         final pembeli = await _pembeliService.getPembeliByIdAkun(_currentUserId!);
         _currentPembeliId = pembeli.idPembeli;
 
-        await _loadHistoriTransaksi();
+        await _loadHistoriPembelian();
       } else {
         setState(() {
           _errorMessage = 'Token tidak valid';
@@ -88,14 +87,14 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
     }
   }
 
-  Future<void> _loadHistoriTransaksi() async {
+  Future<void> _loadHistoriPembelian() async {
     if (_currentPembeliId == null) return;
 
     try {
-      List<Transaksi> allTransaksi = await _transaksiService.getAllTransaksi();
+      List<Pembelian> allPembelian = await _pembelianService.getAllPembelian();
 
-      _historiTransaksi = allTransaksi.where((transaksi) {
-        return transaksi.subPembelian?.pembelian?.idPembeli == _currentPembeliId;
+      _historiPembelian = allPembelian.where((pembelian) {
+        return pembelian.idPembeli == _currentPembeliId;
       }).toList();
 
       setState(() {
@@ -106,33 +105,26 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
         _errorMessage = 'Gagal memuat histori pembelian: ${e.toString()}';
         _isLoading = false;
       });
-      print('Error loading transaction history: $e');
+      print('Error loading pembelian history: $e');
     }
   }
 
-  List<Transaksi> get _filteredTransaksi {
+  List<Pembelian> get _filteredPembelian {
     if (_selectedFilter == 'Semua') {
-      return _historiTransaksi;
+      return _historiPembelian;
     }
-    return _historiTransaksi.where((t) => 
-        t.subPembelian?.pembelian?.statusPembelian == _selectedFilter).toList();
+    return _historiPembelian.where((p) => p.statusPembelian == _selectedFilter).toList();
   }
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'pending':
+      case 'menunggu verifikasi pembayaran':
         return Colors.orange;
       case 'pembayaran valid':
-      case 'lunas':
         return Colors.green;
-      case 'batal':
+      case 'pembayaran tidak valid':
+      case 'tidak mengirimkan bukti pembayaran':
         return Colors.red;
-      case 'diproses':
-        return Colors.blue;
-      case 'dikirim':
-        return Colors.purple;
-      case 'selesai':
-        return Colors.teal;
       default:
         return AppColors.textSecondary;
     }
@@ -140,19 +132,13 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
 
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
-      case 'pending':
+      case 'menunggu verifikasi pembayaran':
         return Icons.pending;
       case 'pembayaran valid':
-      case 'lunas':
         return Icons.check_circle;
-      case 'batal':
+      case 'pembayaran tidak valid':
+      case 'tidak mengirimkan bukti pembayaran':
         return Icons.cancel;
-      case 'diproses':
-        return Icons.hourglass_empty;
-      case 'dikirim':
-        return Icons.local_shipping;
-      case 'selesai':
-        return Icons.done_all;
       default:
         return Icons.info;
     }
@@ -181,7 +167,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
         itemBuilder: (context, index) {
           final filter = _filterOptions[index];
           final isSelected = _selectedFilter == filter;
-          
+
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
@@ -210,14 +196,26 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
     );
   }
 
-  Widget _buildTransaksiCard(Transaksi transaksi) {
-    final pembelian = transaksi.subPembelian?.pembelian;
-    final barang = transaksi.subPembelian?.barang;
-    
-    if (pembelian == null || barang == null) {
+  Widget _buildPembelianCard(Pembelian pembelian) {
+    // Display the first item in SubPembelians for simplicity, or iterate if multiple items are needed
+    final subPembelian = pembelian.subPembelians?.isNotEmpty == true ? pembelian.subPembelians![0] : null;
+    final barang = subPembelian?.barang;
+
+    if (barang == null) {
       return const SizedBox.shrink();
     }
-    
+
+    // Construct the image URL by prepending baseUrl if the image is just a filename
+    String? imageUrl;
+    if (barang.gambar != null && barang.gambar!.isNotEmpty) {
+      final firstImage = barang.gambar!.split(',').first.trim();
+      if (firstImage.isNotEmpty && !firstImage.startsWith('http')) {
+        imageUrl = '${BaseApiService.baseUrlGambar}/uploads/barang/$firstImage';
+      } else {
+        imageUrl = firstImage;
+      }
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -269,16 +267,15 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                 ),
                 const Spacer(),
                 Text(
-                  'ID: ${transaksi.idTransaksi}',
+                  'ID: ${pembelian.idPembelian}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[800], // Darkened from AppColors.textSecondary
+                    color: Colors.grey[800],
                   ),
                 ),
               ],
             ),
           ),
-          
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -294,19 +291,19 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                         color: AppColors.background,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.grey[400]!, // Slightly darker border
+                          color: Colors.grey[400]!,
                         ),
                       ),
-                      child: barang.gambar != null && barang.gambar!.isNotEmpty
+                      child: imageUrl != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Image.network(
-                                barang.gambar!.split(',').first,
+                                imageUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Icon(
                                     Icons.image_not_supported,
-                                    color: Colors.grey[600], // Darkened
+                                    color: Colors.grey[600],
                                     size: 24,
                                   );
                                 },
@@ -314,7 +311,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                             )
                           : Icon(
                               Icons.shopping_bag,
-                              color: Colors.grey[600], // Darkened
+                              color: Colors.grey[600],
                               size: 24,
                             ),
                     ),
@@ -328,7 +325,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey[900], // Darkened from AppColors.textPrimary
+                              color: Colors.grey[900],
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -347,7 +344,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                             'Kategori: ${barang.kategoriBarang}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[800], // Darkened from AppColors.textSecondary
+                              color: Colors.grey[800],
                             ),
                           ),
                         ],
@@ -355,9 +352,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                     ),
                   ],
                 ),
-                
                 const SizedBox(height: 16),
-                
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -382,9 +377,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                     ],
                   ),
                 ),
-                
                 const SizedBox(height: 16),
-                
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -404,7 +397,6 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                     ],
                   ),
                 ),
-                
                 if (pembelian.poinDiperoleh > 0) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -422,7 +414,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                         Icon(
                           Icons.stars,
                           size: 14,
-                          color: Colors.amber[800], // Slightly darker
+                          color: Colors.amber[800],
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -430,14 +422,13 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Colors.amber[800], // Slightly darker
+                            color: Colors.amber[800],
                           ),
                         ),
                       ],
                     ),
                   ),
                 ],
-                
                 if (pembelian.alamat?.alamatLengkap != null) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -455,7 +446,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                         Icon(
                           Icons.location_on,
                           size: 14,
-                          color: Colors.blue[800], // Slightly darker
+                          color: Colors.blue[800],
                         ),
                         const SizedBox(width: 6),
                         Expanded(
@@ -463,7 +454,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                             'Alamat: ${pembelian.alamat!.alamatLengkap}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.blue[800], // Slightly darker
+                              color: Colors.blue[800],
                             ),
                           ),
                         ),
@@ -485,14 +476,14 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
         Icon(
           icon,
           size: 14,
-          color: Colors.grey[800], // Darkened from AppColors.textSecondary
+          color: Colors.grey[800],
         ),
         const SizedBox(width: 6),
         Text(
           '$label:',
           style: TextStyle(
             fontSize: 12,
-            color: Colors.grey[800], // Darkened from AppColors.textSecondary
+            color: Colors.grey[800],
           ),
         ),
         const Spacer(),
@@ -501,7 +492,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: Colors.grey[900], // Darkened from AppColors.textPrimary
+            color: Colors.grey[900],
           ),
         ),
       ],
@@ -517,7 +508,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
           style: TextStyle(
             fontSize: isBold ? 14 : 12,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
-            color: isBold ? Colors.grey[900] : Colors.grey[800], // Darkened
+            color: isBold ? Colors.grey[900] : Colors.grey[800],
           ),
         ),
         Text(
@@ -525,7 +516,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
           style: TextStyle(
             fontSize: isBold ? 14 : 12,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.w500,
-            color: isDiscount ? Colors.green : (isBold ? Colors.grey[900] : Colors.grey[800]), // Darkened
+            color: isDiscount ? Colors.green : (isBold ? Colors.grey[900] : Colors.grey[800]),
           ),
         ),
       ],
@@ -553,7 +544,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
             ),
             const SizedBox(height: 24),
             Text(
-              _selectedFilter == 'Semua' 
+              _selectedFilter == 'Semua'
                   ? 'Belum Ada Histori Pembelian'
                   : 'Tidak Ada Pembelian dengan Status "$_selectedFilter"',
               style: const TextStyle(
@@ -649,7 +640,7 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                       child: Row(
                         children: [
                           Text(
-                            '${_filteredTransaksi.length} pembelian ditemukan',
+                            '${_filteredPembelian.length} pembelian ditemukan',
                             style: TextStyle(
                               fontSize: 14,
                               color: AppColors.textSecondary,
@@ -660,12 +651,12 @@ class _HistoriPembelianPageState extends State<HistoriPembelianPage> {
                     ),
                     const SizedBox(height: 8),
                     Expanded(
-                      child: _filteredTransaksi.isEmpty
+                      child: _filteredPembelian.isEmpty
                           ? _buildEmptyState()
                           : ListView.builder(
-                              itemCount: _filteredTransaksi.length,
+                              itemCount: _filteredPembelian.length,
                               itemBuilder: (context, index) {
-                                return _buildTransaksiCard(_filteredTransaksi[index]);
+                                return _buildPembelianCard(_filteredPembelian[index]);
                               },
                             ),
                     ),
